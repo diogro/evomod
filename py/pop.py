@@ -23,9 +23,11 @@ class Individual:
 
     def mutate(self, ind):
         """Mutates an ind with Individual parameters"""
-        for i in range(2 * self.m):
-            if (np.random.random() < self.mu):
-                ind['y'][i] = ind['y'][i] + np.random.normal(0, self.sigma)
+        mutation_number = np.random.binomial(2 * self.m, self.mu)
+        mutation_vector = np.random.permutation(np.concatenate((
+            np.random.normal(self.sigma, size=mutation_number),
+            np.zeros(2 * self.m - mutation_number))))
+        ind['y'] = ind['y'] + mutation_vector
         for i in range(self.p):
             for j in range(2 * self.m):
                 if (np.random.random() < self.mu_b):
