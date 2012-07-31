@@ -25,7 +25,7 @@ class Individual:
         """Mutates an ind dict with Individual parameters"""
         for i in range(2 * self.m):
             if (np.random.random() < self.mu):
-                ind['y'] = ind['y'] + np.random.normal(0, self.sigma)
+                ind['y'][i] = ind['y'][i] + np.random.normal(0, self.sigma)
         for i in range(self.p):
             for j in range(2 * self.m):
                 if (np.random.random() < self.mu_b):
@@ -35,6 +35,23 @@ class Individual:
         """calculates ind fitness from population"""
         delta_s = ind['z'] - teta
         return np.exp(-np.dot(delta_s, np.linalg.solve(omega, delta_s)))
+
+    def cross(self, ind_1, ind_2):
+        possible_alele = np.array([0, 1])
+        b = np.zeros((self.p, 2 * self.m),
+                     dtype=float)              # binary ontogenetic matrix
+        y = np.zeros(2 * self.m, dtype=float)  # gene vector
+        for i in range(self.m):
+            alele_1 = np.random.permutation(possible_alele)[0]
+            alele_2 = np.random.permutation(possible_alele)[0]
+            y[2 * i] = ind_1['y'][2 * i + alele_1]
+            y[2 * i + 1] = ind_2['y'][2 * i + alele_2]
+            b[:, 2 * i] = ind_1['b'][:, 2 * i + alele_1]
+            b[:, 2 * i + 1] = ind_2['b'][:, 2 * i + alele_2]
+        x = np.dot(b, y)                       # additive effects vector
+        z = x + np.random.normal(0, self.amb,
+                                 self.p)       # phenotipic values vector
+        return {'y': y, 'x': x, 'z': z, 'b': b}
 
 
 class Population:
