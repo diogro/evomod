@@ -12,7 +12,7 @@ class Individual:
         self.sigma = sigma        # genetic mutation variance
 
     def generate(self):
-        """creates an ind dict with Individual parameters"""
+        """creates an ind with Individual parameters"""
         b = np.zeros((self.p, 2 * self.m),
                      dtype=float)              # binary ontogenetic matrix
         y = np.zeros(2 * self.m, dtype=float)  # gene vector
@@ -22,7 +22,7 @@ class Individual:
         return {'y': y, 'x': x, 'z': z, 'b': b}
 
     def mutate(self, ind):
-        """Mutates an ind dict with Individual parameters"""
+        """Mutates an ind with Individual parameters"""
         for i in range(2 * self.m):
             if (np.random.random() < self.mu):
                 ind['y'][i] = ind['y'][i] + np.random.normal(0, self.sigma)
@@ -93,3 +93,18 @@ class Population:
             new_pop.append(self.indmod.cross(self.pop[sires[k]],
                                              self.pop[dames[k]]))
         self.pop = new_pop
+
+    def matrices(self):
+        """Calculate covariance and correlation matrices"""
+        zs = np.array([ind['z'] for ind in self.pop])
+        xs = np.array([ind['x'] for ind in self.pop])
+        phenotipic = np.cov(zs.transpose())
+        genetic = np.cov(xs.transpose())
+        outer_diagonal = phenotipic[np.diag_indices_from(phenotipic)]
+        outer_diagonal = (outer_diagonal[:, np.newaxis] * outer_diagonal)
+        corr_phenotipic = phenotipic / outer_diagonal
+        outer_diagonal = genetic[np.diag_indices_from(genetic)]
+        outer_diagonal = (outer_diagonal[:, np.newaxis] * outer_diagonal)
+        corr_genetic = genetic / outer_diagonal
+        return {'P': phenotipic, 'G': genetic, 'corrP': corr_phenotipic,
+                'corrG': corr_genetic}
