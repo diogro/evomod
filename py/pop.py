@@ -13,10 +13,12 @@ class Individual:
 
     def generate(self):
         """creates an ind dict with Individual parameters"""
-        b = np.zeros((self.p, 2 * self.m), dtype=float) # binary ontogenetic matrix
-        y = np.zeros(2 * self.m, dtype=float)           # gene vector
-        x = np.dot(b,y)                                       # additive effects vector
-        z = x + np.random.normal(0, self.amb, self.p)   # phenotipic values vector
+        b = np.zeros((self.p, 2 * self.m),
+                     dtype=float)              # binary ontogenetic matrix
+        y = np.zeros(2 * self.m, dtype=float)  # gene vector
+        x = np.dot(b, y)                       # additive effects vector
+        z = x + np.random.normal(0, self.amb,
+                                 self.p)       # phenotipic values vector
         return {'y': y, 'x': x, 'z': z, 'b': b}
 
     def mutate(self, ind):
@@ -24,17 +26,15 @@ class Individual:
         for i in range(2 * self.m):
             if (np.random.random() < self.mu):
                 ind['y'] = ind['y'] + np.random.normal(0, self.sigma)
-        for i in range(2 * self.m):
-            for j in range(2 * self.p):
+        for i in range(self.p):
+            for j in range(2 * self.m):
                 if (np.random.random() < self.mu_b):
-                    ind['b'][i, j] = 1 - ind['b'][i, j]
+                    ind['b'][i, j] = 1. - ind['b'][i, j]
 
     def fitness(self, ind, omega, teta):
         """calculates ind fitness from population"""
         delta_s = ind['z'] - teta
         return np.exp(-np.dot(delta_s, np.linalg.solve(omega, delta_s)))
-
-
 
 
 class Population:
