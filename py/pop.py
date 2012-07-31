@@ -24,8 +24,8 @@ class Individual:
         for i in range(2 * self.m):
             if (np.random.random() < self.mu):
                 ind['y'] = ind['y'] + np.random.normal(0, self.sigma)
-        for i in range(2 * self.m):
-            for j in range(2 * self.p):
+        for i in range(self.p):
+            for j in range(2 * self.m):
                 if (np.random.random() < self.mu_b):
                     ind['b'][i, j] = 1 - ind['b'][i, j]
 
