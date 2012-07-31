@@ -63,16 +63,33 @@ class Population:
         self.teta = teta
         self.omega = omega
         self.pop = [indmod.generate() for k in range(n_e)]
-        self.fitness = np.ones(n_e)
+        self.fitness = np.ones(n_e)/n_e
 
     def mutate(self):
         """mutates every individual of population"""
+        #TODO Obviously parallel
         for k in range(self.n_e):
             self.indmod.mutate(self.pop[k])
 
     def update_fitness(self):
         """calculates the fitness of every individual of population"""
+        #TODO Obviously parallel
         for k in range(self.n_e):
             self.fitness[k] = self.indmod.fitness(self.pop[k],
                                                   self.omega,
                                                   self.teta)
+        self.fitness = self.fitness/sum(self.fitness)
+
+    def next_generation(self):
+        """creates next generation by mutating crossing with probability
+        proportional do fitness"""
+        self.mutate()
+        self.update_fitness()
+        sires = self.fitness.cumsum().searchsorted(np.random.sample(self.n_e))
+        dames = self.fitness.cumsum().searchsorted(np.random.sample(self.n_e))
+        new_pop = []
+        #TODO Obviously parallel
+        for k in range(self.n_e):
+            new_pop.append(self.indmod.cross(self.pop[sires[k]],
+                                             self.pop[dames[k]]))
+        self.pop = new_pop
