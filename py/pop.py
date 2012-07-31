@@ -13,10 +13,10 @@ class Individual:
 
     def generate(self):
         """creates an ind dict with Individual parameters"""
-        b = np.zeros(2 * self.m, self.p)               # binary ontogenetic matrix
-        y = np.zeros(2 * self.m)                       # gene vector
-        x = b * y                                      # additive effects vector
-        z = x + np.random.normal(0, self.amb, self.p)  # phenotipic values vector
+        b = np.zeros((self.p, 2 * self.m), dtype=float) # binary ontogenetic matrix
+        y = np.zeros(2 * self.m, dtype=float)           # gene vector
+        x = np.dot(b,y)                                       # additive effects vector
+        z = x + np.random.normal(0, self.amb, self.p)   # phenotipic values vector
         return {'y': y, 'x': x, 'z': z, 'b': b}
 
     def mutate(self, ind):
@@ -33,6 +33,8 @@ class Individual:
         """calculates ind fitness from population"""
         delta_s = ind['z'] - teta
         return np.exp(-np.dot(delta_s, np.linalg.solve(omega, delta_s)))
+
+
 
 
 class Population:
