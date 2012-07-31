@@ -1,4 +1,21 @@
+#! /usr/bin/env python
+"""Usage: ./pop.py [options]
+
+Options:
+    -h --help                show this      
+    -m loci                  number of loci [default: 20]
+    -p traits                number of traits [default: 10]
+    -mu mu                   genetic mutation rate [default: 5e-4]
+    -mu_b mu_b               ontogenetic mutation rate [default: 1e-4]
+    -ne ne                   population size [default: 5000]
+    -s sigma                 mutation size [default: 0.2]
+    -e amb                   enviromental noise [default: 0.8]
+    -o omega                 selection variance [default: 1.0]
+    -omega_mat file_name     selection correlation matrix [default: omega.csv]
+"""
+
 import numpy as np
+from docopt import docopt
 
 
 class Individual:
@@ -118,3 +135,16 @@ class Population:
         corr_genetic = genetic / outer_diagonal
         return {'P': phenotipic, 'G': genetic, 'corrP': corr_phenotipic,
                 'corrG': corr_genetic}
+
+
+def main(options):
+    teta = np.zeros(int(options['-p']))
+    omega = np.genfromtxt(options['-omega_mat'])
+    i = Individual(int(options['-m']), int(options['-p']), float(options['-e']),
+            float(options['-mu']), float(options['-mu_b']), float(options['-s']))
+    p = Population(int(options['-ne']), teta, omega, i)
+    p.next_generation()
+
+if __name__ == '__main__':
+    options = docopt(__doc__)
+    main(options)
