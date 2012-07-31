@@ -37,6 +37,7 @@ class Individual:
         return np.exp(-np.dot(delta_s, np.linalg.solve(omega, delta_s)))
 
     def cross(self, ind_1, ind_2):
+        """Generates a new individual by crossing ind_1 and ind_2"""
         possible_alele = np.array([0, 1])
         b = np.zeros((self.p, 2 * self.m),
                      dtype=float)              # binary ontogenetic matrix
