@@ -1,5 +1,4 @@
 import numpy as np
-import random as rand
 
 
 class Individual:
@@ -14,21 +13,20 @@ class Individual:
 
     def generate(self):
         """creates an ind dict with Individual parameters"""
-        b = np.zeros(2 * self.m, self.p)   # binary ontogenetic matrix
-        y = np.zeros(2 * self.m)      # gene vector
-        x = b * y                  # additive effects vector
-        z = x                    # phenotipic values vector TODO incluir ruido
-                                   #ambiental com variancia amb
+        b = np.zeros(2 * self.m, self.p)               # binary ontogenetic matrix
+        y = np.zeros(2 * self.m)                       # gene vector
+        x = b * y                                      # additive effects vector
+        z = x + np.random.normal(0, self.amb, self.p)  # phenotipic values vector
         return {'y': y, 'x': x, 'z': z, 'b': b}
 
     def mutate(self, ind):
         """Mutates an ind dict with Individual parameters"""
         for i in range(2 * self.m):
-            if (rand.random() < self.mu):
-                ind['y'] = ind['y'] + rand.normalvariate(0, self.sigma)
+            if (np.random.random() < self.mu):
+                ind['y'] = ind['y'] + np.random.normal(0, self.sigma)
         for i in range(2 * self.m):
             for j in range(2 * self.p):
-                if (rand.random() < self.mu_b):
+                if (np.random.random() < self.mu_b):
                     ind['b'][i, j] = 1 - ind['b'][i, j]
 
     def fitness(self, ind, omega, teta):
