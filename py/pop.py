@@ -36,9 +36,9 @@ class Individual:
             mutation_mask = np.concatenate((
                 np.ones(mutation_number_b),
                 np.zeros(2 * self.m * self.p - mutation_number_b)))
-            np.random.shuffle(mutation_mask) 
+            np.random.shuffle(mutation_mask)
             mutation_mask = mutation_mask.reshape((self.p, 2 * self.m))
-            ind['b'] = (ind['b'] + mutation_mask)%2
+            ind['b'] = (ind['b'] + mutation_mask) % 2
 
     def fitness(self, ind, omega, teta):
         """calculates ind fitness from population"""
@@ -51,8 +51,8 @@ class Individual:
                      dtype=float)              # binary ontogenetic matrix
         y = np.zeros(2 * self.m, dtype=float)  # gene vector
         for i in range(self.m):
-            alele_1 = np.random.randint(0,2)
-            alele_2 = np.random.randint(0,2)
+            alele_1 = np.random.randint(0, 2)
+            alele_2 = np.random.randint(0, 2)
             y[2 * i] = ind_1['y'][2 * i + alele_1]
             y[2 * i + 1] = ind_2['y'][2 * i + alele_2]
             b[:, 2 * i] = ind_1['b'][:, 2 * i + alele_1]
@@ -93,8 +93,10 @@ class Population:
         proportional do fitness"""
         self.mutate()
         self.update_fitness()
-        sires = self.fitness.cumsum().searchsorted(np.random.sample(self.n_e))
-        dames = self.fitness.cumsum().searchsorted(np.random.sample(self.n_e))
+        sires = np.random.choice(self.n_e, size = self.n_e,
+                p=self.fitness, replace = True)
+        dames = np.random.choice(self.n_e, size = self.n_e,
+                p=self.fitness, replace = True)
         new_pop = []
         #TODO Obviously parallel
         for k in range(self.n_e):
