@@ -23,13 +23,23 @@ class Individual:
 
     def mutate(self, ind):
         """Mutates an ind with Individual parameters"""
-        for i in range(2 * self.m):
-            if (np.random.random() < self.mu):
-                ind['y'][i] = ind['y'][i] + np.random.normal(0, self.sigma)
-        for i in range(self.p):
-            for j in range(2 * self.m):
-                if (np.random.random() < self.mu_b):
-                    ind['b'][i, j] = 1. - ind['b'][i, j]
+        mutation_number_y = np.random.binomial(2 * self.m, self.mu)
+        if (mutation_number_y > 0):
+            mutation_vector = np.random.permutation(np.concatenate((
+                np.random.normal(self.sigma, size=mutation_number_y),
+                np.zeros(2 * self.m - mutation_number_y))))
+            ind['y'] = ind['y'] + mutation_vector
+        mutation_number_b = np.random.binomial(2 * self.m * self.p,
+                                               self.mu_b)
+        if (mutation_number_b > 0):
+            mutation_mask = np.random.permutation(np.concatenate((
+                np.ones(mutation_number_b),
+                np.zeros(2 * self.m * self.p - mutation_number_b))))
+            mutation_mask.reshape((self.p, 2 * self.m))
+            for i in range(self.p):
+                for j in range(2 * self.m):
+                    if (mutation_mask[i, j] == 1):
+                        ind['b'][i, j] = 1. - ind['b'][i, j]
 
     def fitness(self, ind, omega, teta):
         """calculates ind fitness from population"""
