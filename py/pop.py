@@ -63,7 +63,7 @@ class Population:
         self.teta = teta
         self.omega = omega
         self.pop = [indmod.generate() for k in range(n_e)]
-        self.fitness = np.ones(n_e)/n_e
+        self.fitness = np.ones(n_e) / n_e
 
     def mutate(self):
         """mutates every individual of population"""
@@ -78,7 +78,7 @@ class Population:
             self.fitness[k] = self.indmod.fitness(self.pop[k],
                                                   self.omega,
                                                   self.teta)
-        self.fitness = self.fitness/sum(self.fitness)
+        self.fitness = self.fitness / sum(self.fitness)
 
     def next_generation(self):
         """creates next generation by mutating crossing with probability
