@@ -25,21 +25,20 @@ class Individual:
         """Mutates an ind with Individual parameters"""
         mutation_number_y = np.random.binomial(2 * self.m, self.mu)
         if (mutation_number_y > 0):
-            mutation_vector = np.random.permutation(np.concatenate((
+            mutation_vector = np.concatenate((
                 np.random.normal(self.sigma, size=mutation_number_y),
-                np.zeros(2 * self.m - mutation_number_y))))
+                np.zeros(2 * self.m - mutation_number_y)))
+            np.random.shuffle(mutation_vector)
             ind['y'] = ind['y'] + mutation_vector
         mutation_number_b = np.random.binomial(2 * self.m * self.p,
                                                self.mu_b)
         if (mutation_number_b > 0):
-            mutation_mask = np.random.permutation(np.concatenate((
+            mutation_mask = np.concatenate((
                 np.ones(mutation_number_b),
-                np.zeros(2 * self.m * self.p - mutation_number_b))))
-            mutation_mask.reshape((self.p, 2 * self.m))
-            for i in range(self.p):
-                for j in range(2 * self.m):
-                    if (mutation_mask[i, j] == 1):
-                        ind['b'][i, j] = 1. - ind['b'][i, j]
+                np.zeros(2 * self.m * self.p - mutation_number_b)))
+            np.random.shuffle(mutation_mask) 
+            mutation_mask = mutation_mask.reshape((self.p, 2 * self.m))
+            ind['b'] = (ind['b'] + mutation_mask)%2
 
     def fitness(self, ind, omega, teta):
         """calculates ind fitness from population"""
@@ -48,13 +47,12 @@ class Individual:
 
     def cross(self, ind_1, ind_2):
         """Generates a new individual by crossing ind_1 and ind_2"""
-        possible_alele = np.array([0, 1])
         b = np.zeros((self.p, 2 * self.m),
                      dtype=float)              # binary ontogenetic matrix
         y = np.zeros(2 * self.m, dtype=float)  # gene vector
         for i in range(self.m):
-            alele_1 = np.random.permutation(possible_alele)[0]
-            alele_2 = np.random.permutation(possible_alele)[0]
+            alele_1 = np.random.randint(0,2)
+            alele_2 = np.random.randint(0,2)
             y[2 * i] = ind_1['y'][2 * i + alele_1]
             y[2 * i + 1] = ind_2['y'][2 * i + alele_2]
             b[:, 2 * i] = ind_1['b'][:, 2 * i + alele_1]
