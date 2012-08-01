@@ -2,7 +2,7 @@
 """Usage: ./pop.py [options]
 
 Options:
-    -h --help                show this      
+    -h --help                show this
     -m loci                  number of loci [default: 20]
     -p traits                number of traits [default: 10]
     -mu mu                   genetic mutation rate [default: 5e-4]
@@ -12,6 +12,7 @@ Options:
     -e amb                   enviromental noise [default: 0.8]
     -o omega                 selection variance [default: 1.0]
     -omega_mat file_name     selection correlation matrix [default: omega.csv]
+    -t time                  number of generations [default: 100]
 """
 
 import numpy as np
@@ -110,10 +111,10 @@ class Population:
         proportional do fitness"""
         self.mutate()
         self.update_fitness()
-        sires = np.random.choice(self.n_e, size = self.n_e,
-                p=self.fitness, replace = True)
-        dames = np.random.choice(self.n_e, size = self.n_e,
-                p=self.fitness, replace = True)
+        sires = np.random.choice(self.n_e, size=self.n_e,
+                                 p=self.fitness, replace=True)
+        dames = np.random.choice(self.n_e, size=self.n_e,
+                                 p=self.fitness, replace=True)
         new_pop = []
         #TODO Obviously parallel
         for k in range(self.n_e):
@@ -140,10 +141,18 @@ class Population:
 def main(options):
     teta = np.zeros(int(options['-p']))
     omega = np.genfromtxt(options['-omega_mat'])
-    i = Individual(int(options['-m']), int(options['-p']), float(options['-e']),
-            float(options['-mu']), float(options['-mu_b']), float(options['-s']))
-    p = Population(int(options['-ne']), teta, omega, i)
-    p.next_generation()
+    i = Individual(int(options['-m']),
+                   int(options['-p']),
+                   float(options['-e']),
+                   float(options['-mu']),
+                   float(options['-mu_b']),
+                   float(options['-s']))
+    p = Population(int(options['-ne']),
+                   teta,
+                   omega,
+                   i)
+    for generation in range(int(options['-t'])):
+        p.next_generation()
 
 if __name__ == '__main__':
     options = docopt(__doc__)
