@@ -31,7 +31,7 @@ class Individual:
 
     def generate(self):
         """creates an ind with Individual parameters"""
-        b = np.zeros((self.p, 2 * self.m),
+        b = np.ones((self.p, 2 * self.m),
                      dtype=float)              # binary ontogenetic matrix
         y = np.zeros(2 * self.m, dtype=float)  # gene vector
         x = np.dot(b, y)                       # additive effects vector
@@ -68,13 +68,13 @@ class Individual:
         b = np.zeros((self.p, 2 * self.m),
                      dtype=float)              # binary ontogenetic matrix
         y = np.zeros(2 * self.m, dtype=float)  # gene vector
-        for i in range(self.m):
+        for locus in range(self.m):
             alele_1 = np.random.randint(0, 2)
             alele_2 = np.random.randint(0, 2)
-            y[2 * i] = ind_1['y'][2 * i + alele_1]
-            y[2 * i + 1] = ind_2['y'][2 * i + alele_2]
-            b[:, 2 * i] = ind_1['b'][:, 2 * i + alele_1]
-            b[:, 2 * i + 1] = ind_2['b'][:, 2 * i + alele_2]
+            y[2 * locus] = ind_1['y'][2 * locus + alele_1]
+            y[2 * locus + 1] = ind_2['y'][2 * locus + alele_2]
+            b[:, 2 * locus] = ind_1['b'][:, 2 * locus + alele_1]
+            b[:, 2 * locus + 1] = ind_2['b'][:, 2 * locus + alele_2]
         x = np.dot(b, y)                       # additive effects vector
         z = x + np.random.normal(0, self.amb,
                                  self.p)       # phenotipic values vector
@@ -122,20 +122,28 @@ class Population:
                                              self.pop[dames[k]]))
         self.pop = new_pop
 
-    def matrices(self):
-        """Calculate covariance and correlation matrices"""
+    def moments(self):
+        """Calculate covariance and correlation matrices,
+        trait means"""
         zs = np.array([ind['z'] for ind in self.pop])
         xs = np.array([ind['x'] for ind in self.pop])
+        zmean = zs.mean(axis=0)
+        xmean = xs.mean(axis=0)
         phenotipic = np.cov(zs.transpose())
         genetic = np.cov(xs.transpose())
         outer_diagonal = phenotipic[np.diag_indices_from(phenotipic)]
-        outer_diagonal = (outer_diagonal[:, np.newaxis] * outer_diagonal)
+        outer_diagonal = np.sqrt(outer_diagonal[:, np.newaxis] * outer_diagonal)
         corr_phenotipic = phenotipic / outer_diagonal
         outer_diagonal = genetic[np.diag_indices_from(genetic)]
-        outer_diagonal = (outer_diagonal[:, np.newaxis] * outer_diagonal)
+        outer_diagonal = np.sqrt(outer_diagonal[:, np.newaxis] * outer_diagonal)
         corr_genetic = genetic / outer_diagonal
-        return {'P': phenotipic, 'G': genetic, 'corrP': corr_phenotipic,
-                'corrG': corr_genetic}
+        return {'P': phenotipic,
+                'G': genetic,
+                'corrP': corr_phenotipic,
+                'corrG': corr_genetic,
+                'z.mean': zmean,
+                'x.mean': xmean}
+
 
 
 def main(options):
