@@ -3,17 +3,17 @@
 
 Options:
    -h --help                show this
-   -m loci                  number of loci [default: 20]
+   -l loci                  number of loci [default: 20]
    -p traits                number of traits [default: 10]
    -mu mu                   genetic mutation rate [default: 5e-3]
-   -mu_b mu_b               ontogenetic mutation rate [default: 1e-3]
-   -ne ne                   population size [default: 2500]
+   -b mu_b                  ontogenetic mutation rate [default: 1e-3]
+   -n ne                   population size [default: 2500]
    -s sigma                 mutation size [default: 0.2]
    -e amb                   enviromental noise [default: 0.8]
-   -o omega                 selection variance [default: 1.0]
-   -omega_mat file_name     selection correlation matrix [default: omega.csv]
+   -v omega_var             selection variance [default: 1.0]
+   -o file_name             selection correlation matrix [default: omega.csv]
    -t time                  number of generations [default: 1]
-   -ds delta_S              change in optimal per generation [default: 0.0]
+   -d delta_S              change in optimal per generation [default: 0.0]
 """
 
 import numpy as np
@@ -235,17 +235,17 @@ def mat_print(matrix, out_format, output, generation):
 
 def main(options):
     teta_init = np.zeros(int(options['-p']))
-    delta_teta = np.ones(int(options['-p'])) * float(options['-ds'])
-    omega = np.genfromtxt(options['-omega_mat'])
-    i = Individual(int(options['-m']),
+    delta_teta = np.ones(int(options['-p'])) * float(options['-d'])
+    omega = np.genfromtxt(options['-o'])
+    i = Individual(int(options['-l']),
                    int(options['-p']),
                    float(options['-e']),
                    float(options['-mu']),
-                   float(options['-mu_b']),
+                   float(options['-b']),
                    float(options['-s']))
-    p = Population(int(options['-ne']),
+    p = Population(int(options['-n']),
                    teta_init,
-                   float(options['-ds']),
+                   float(options['-d']),
                    omega,
                    i)
     for generation in range(int(options['-t'])):
