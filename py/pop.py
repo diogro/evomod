@@ -106,11 +106,16 @@ class Population:
             self.fitness[k] = self.indmod.fitness(self.pop[k],
                                                   self.omega,
                                                   self.teta)
-        #TODO, problemas aqui, as vezes fica com soma diferente de 1.0
-        self.fitness /= self.fitness.sum()
+            if (np.isnan(self.fitness[k]) or np.isinf(self.fitness[k])):
+                self.fitness[k] = 0.0
+        fitness_total = self.fitness.sum()
+        if (fitness_total == 0.0):
+            self.fitness = np.ones(self.indmod.p) / self.indmod.p
+        else:
+            self.fitness /= fitness_total
 
     def next_generation(self, delta_s):
-        """creates next generation by mutating crossing with probability
+        """creates next generation by mutating then crossing with probability
         proportional do fitness"""
         self.mutate()
         self.update_fitness()
@@ -174,7 +179,7 @@ def main(options):
                    i)
     for generation in range(int(options['-t'])):
         print generation
-        p.next_generation(float(options['-ds']))
+        p.next_generation(teta * float(options['-ds']))
 
 if __name__ == '__main__':
     options = docopt(__doc__)
