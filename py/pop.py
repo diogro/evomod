@@ -2,18 +2,18 @@
 """Usage: ./pop.py [options]
 
 Options:
-   -h --help                show this
-   -l loci                  number of loci [default: 20]
-   -p traits                number of traits [default: 10]
-   -mu mu                   genetic mutation rate [default: 5e-3]
-   -b mu_b                  ontogenetic mutation rate [default: 1e-3]
-   -n ne                   population size [default: 2500]
-   -s sigma                 mutation size [default: 0.2]
-   -e amb                   enviromental noise [default: 0.8]
-   -v omega_var             selection variance [default: 1.0]
-   -o file_name             selection correlation matrix [default: omega.csv]
-   -t time                  number of generations [default: 1]
-   -d delta_S              change in optimal per generation [default: 0.0]
+   -h --help              show this
+   -l loci                number of loci [default: 20]
+   -p traits              number of traits [default: 10]
+   -m mu                  genetic mutation rate [default: 5e-3]
+   -b mu_b                ontogenetic mutation rate [default: 1e-3]
+   -n ne                  population size [default: 2500]
+   -s sigma               mutation size [default: 0.2]
+   -e amb                 enviromental noise [default: 0.8]
+   -v omega_var           selection variance [default: 1.0]
+   -o omega_mat           selection correlation matrix [default: omega.csv]
+   -t time                number of generations [default: 1]
+   -d delta_S             change in optimal per generation [default: 0.0]
 """
 
 import numpy as np
@@ -240,7 +240,7 @@ def main(options):
     i = Individual(int(options['-l']),
                    int(options['-p']),
                    float(options['-e']),
-                   float(options['-mu']),
+                   float(options['-m']),
                    float(options['-b']),
                    float(options['-s']))
     p = Population(int(options['-n']),
