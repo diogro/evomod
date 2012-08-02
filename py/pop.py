@@ -2,17 +2,18 @@
 """Usage: ./pop.py [options]
 
 Options:
-    -h --help                show this
-    -m loci                  number of loci [default: 20]
-    -p traits                number of traits [default: 10]
-    -mu mu                   genetic mutation rate [default: 5e-4]
-    -mu_b mu_b               ontogenetic mutation rate [default: 1e-4]
-    -ne ne                   population size [default: 5000]
-    -s sigma                 mutation size [default: 0.2]
-    -e amb                   enviromental noise [default: 0.8]
-    -o omega                 selection variance [default: 1.0]
-    -omega_mat file_name     selection correlation matrix [default: omega.csv]
-    -t time                  number of generations [default: 100]
+   -h --help                show this
+   -m loci                  number of loci [default: 20]
+   -p traits                number of traits [default: 10]
+   -mu mu                   genetic mutation rate [default: 5e-4]
+   -mu_b mu_b               ontogenetic mutation rate [default: 1e-4]
+   -ne ne                   population size [default: 2500]
+   -s sigma                 mutation size [default: 0.2]
+   -e amb                   enviromental noise [default: 0.8]
+   -o omega                 selection variance [default: 1.0]
+   -omega_mat file_name     selection correlation matrix [default: omega.csv]
+   -t time                  number of generations [default: 1]
+   -ds delta_S              change in optimal per generation [default: 0.0]
 """
 
 import numpy as np
@@ -88,6 +89,7 @@ class Population:
         self.n_e = n_e
         self.teta = teta
         self.omega = omega
+        self.current_gen = 0
         self.pop = [indmod.generate() for k in range(n_e)]
         self.fitness = np.ones(n_e) / n_e
 
@@ -104,9 +106,10 @@ class Population:
             self.fitness[k] = self.indmod.fitness(self.pop[k],
                                                   self.omega,
                                                   self.teta)
-        self.fitness = self.fitness / sum(self.fitness)
+        #TODO, problemas aqui, as vezes fica com soma diferente de 1.0
+        self.fitness /= self.fitness.sum()
 
-    def next_generation(self):
+    def next_generation(self, delta_s):
         """creates next generation by mutating crossing with probability
         proportional do fitness"""
         self.mutate()
@@ -121,14 +124,21 @@ class Population:
             new_pop.append(self.indmod.cross(self.pop[sires[k]],
                                              self.pop[dames[k]]))
         self.pop = new_pop
+        self.current_gen += 1
+        self.teta += delta_s
 
     def moments(self):
         """Calculate covariance and correlation matrices,
-        trait means"""
+        trait, genotipic and ontogenetic means"""
         zs = np.array([ind['z'] for ind in self.pop])
         xs = np.array([ind['x'] for ind in self.pop])
+        ys = np.array([ind['y'] for ind in self.pop])
+        bs = np.array([ind['b'] for ind in self.pop])
+        ymean = ys.mean(axis=0)
         zmean = zs.mean(axis=0)
         xmean = xs.mean(axis=0)
+        ymean = ys.mean(axis=0)
+        bmean = bs.mean(axis=0)
         phenotipic = np.cov(zs.transpose())
         genetic = np.cov(xs.transpose())
         outer_diagonal = phenotipic[np.diag_indices_from(phenotipic)]
@@ -139,16 +149,18 @@ class Population:
         outer_diagonal = np.sqrt(outer_diagonal[:, np.newaxis] *
                                  outer_diagonal)
         corr_genetic = genetic / outer_diagonal
-        return {'P': phenotipic,
+        return {'y.mean': ymean,
+                'b.mean': bmean,
+                'z.mean': zmean,
+                'x.mean': xmean,
+                'P': phenotipic,
                 'G': genetic,
                 'corrP': corr_phenotipic,
-                'corrG': corr_genetic,
-                'z.mean': zmean,
-                'x.mean': xmean}
+                'corrG': corr_genetic}
 
 
 def main(options):
-    teta = np.zeros(int(options['-p']))
+    teta = np.ones(int(options['-p']))
     omega = np.genfromtxt(options['-omega_mat'])
     i = Individual(int(options['-m']),
                    int(options['-p']),
@@ -161,7 +173,8 @@ def main(options):
                    omega,
                    i)
     for generation in range(int(options['-t'])):
-        p.next_generation()
+        print generation
+        p.next_generation(float(options['-ds']))
 
 if __name__ == '__main__':
     options = docopt(__doc__)
