@@ -18,7 +18,8 @@ Options:
 
 import numpy as np
 import os
-import matplotlib.pylab as mpl
+import errno
+#import matplotlib.pylab as mpl
 from docopt import docopt
 
 
@@ -94,14 +95,17 @@ class Population:
         self.current_gen = 0
         self.pop = [indmod.generate() for k in range(n_e)]
         self.fitness = np.ones(n_e) / n_e
-        self.pop_name = ('./dats/Ne.' + str(n_e) + '-m_p.' + str(indmod.m) + '_'
+        self.pop_name = ('./dats/Ne.' + str(n_e) + '-mp.' + str(indmod.m) + '_'
                          + str(indmod.p) + '-mu_muB.' + str(indmod.mu) + '_'
                          + str(indmod.mu_b) + '-Delta_S.' + str(delta_s))
         self.out_files = self.set_outfile()
 
     def set_outfile(self):
-        if not os.path.exists('./dats/'):
-                os.makedirs('./dats/')
+        try:
+            os.makedirs('./dats/')
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
         varG = open(self.pop_name + '-varG.dat', "w")
         varP = open(self.pop_name + '-varP.dat', "w")
         varH = open(self.pop_name + '-varH.dat', "w")
