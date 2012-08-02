@@ -5,8 +5,8 @@ Options:
    -h --help                show this
    -m loci                  number of loci [default: 20]
    -p traits                number of traits [default: 10]
-   -mu mu                   genetic mutation rate [default: 5e-4]
-   -mu_b mu_b               ontogenetic mutation rate [default: 1e-4]
+   -mu mu                   genetic mutation rate [default: 5e-3]
+   -mu_b mu_b               ontogenetic mutation rate [default: 1e-3]
    -ne ne                   population size [default: 2500]
    -s sigma                 mutation size [default: 0.2]
    -e amb                   enviromental noise [default: 0.8]
@@ -17,6 +17,7 @@ Options:
 """
 
 import numpy as np
+import matplotlib.pylab as mpl
 from docopt import docopt
 
 
@@ -84,7 +85,7 @@ class Individual:
 
 class Population:
     """class for population of Individuals"""
-    def __init__(self, n_e, teta, omega, indmod):
+    def __init__(self, n_e, teta, delta_s, omega, indmod):
         self.indmod = indmod
         self.n_e = n_e
         self.teta = teta
@@ -92,6 +93,30 @@ class Population:
         self.current_gen = 0
         self.pop = [indmod.generate() for k in range(n_e)]
         self.fitness = np.ones(n_e) / n_e
+        self.pop_name = ('Ne.' + str(n_e) + '-m_p.' + str(indmod.m) + '_'
+                         + str(indmod.p) + '-mu_muB.' + str(indmod.mu) + '_'
+                         + str(indmod.mu_b) + '-Delta_S.' + str(delta_s))
+        self.out_files = self.set_outfile()
+
+    def set_outfile(self):
+        varG = open(self.pop_name + '-varG.dat', "w")
+        varP = open(self.pop_name + '-varP.dat', "w")
+        varH = open(self.pop_name + '-varH.dat', "w")
+        corrG = open(self.pop_name + '-corrG.dat', "w")
+        corrP = open(self.pop_name + '-corrP.dat', "w")
+        z_traits = open(self.pop_name + '-traits_z.dat', "w")
+        y_traits = open(self.pop_name + '-traits_y.dat', "w")
+        x_traits = open(self.pop_name + '-traits_x.dat', "w")
+        b_matrix = open(self.pop_name + '-b.dat', "w")
+        return {'varG': varG,
+                'varP': varP,
+                'varH': varH,
+                'corrG': corrG,
+                'corrP': corrP,
+                'b.mean': b_matrix,
+                'z.mean': z_traits,
+                'y.mean': y_traits,
+                'x.mean': x_traits}
 
     def mutate(self):
         """mutates every individual of population"""
@@ -110,7 +135,7 @@ class Population:
                 self.fitness[k] = 0.0
         fitness_total = self.fitness.sum()
         if (fitness_total == 0.0):
-            self.fitness = np.ones(self.indmod.p) / self.indmod.p
+            self.fitness = np.ones(self.n_e) / self.n_e
         else:
             self.fitness /= fitness_total
 
@@ -163,9 +188,47 @@ class Population:
                 'corrP': corr_phenotipic,
                 'corrG': corr_genetic}
 
+    def print_moments(self):
+        mats = self.moments()
+        gen = self.current_gen
+        mat_print(mats['corrG'], 'tri', self.out_files['corrG'], gen)
+        mat_print(mats['corrP'], 'tri', self.out_files['corrP'], gen)
+        mat_print(mats['G'], 'diag', self.out_files['varG'], gen)
+        mat_print(mats['P'], 'diag', self.out_files['varP'], gen)
+        mat_print(mats['y.mean'], 'vector', self.out_files['y.mean'], gen)
+        mat_print(mats['z.mean'], 'vector', self.out_files['z.mean'], gen)
+        mat_print(mats['x.mean'], 'vector', self.out_files['x.mean'], gen)
+        mat_print(mats['b.mean'], 'total', self.out_files['b.mean'], gen)
+
+
+def mat_print(matrix, out_format, output, generation):
+    s = str(generation) + ' '
+    if (out_format == 'vector'):
+        n = len(matrix)
+        for i in range(n):
+                s += str(matrix[i]) + ' '
+    else:
+        n, m = matrix.shape
+
+    if (out_format == 'total'):
+        for i in range(n):
+            for j in range(m):
+                s += str(matrix[i, j]) + ' '
+    if (out_format == 'tri'):
+        for i in range(1, n):
+            for j in range(i):
+                s += str(matrix[i, j]) + ' '
+    if (out_format == 'diag'):
+        for i in range(n):
+                s += str(matrix[i, i]) + ' '
+    s += '\n'
+    output.write(s)
+    output.flush()
+
 
 def main(options):
-    teta = np.ones(int(options['-p']))
+    teta_init = np.zeros(int(options['-p']))
+    delta_teta = np.ones(int(options['-p'])) * float(options['-ds'])
     omega = np.genfromtxt(options['-omega_mat'])
     i = Individual(int(options['-m']),
                    int(options['-p']),
@@ -174,12 +237,14 @@ def main(options):
                    float(options['-mu_b']),
                    float(options['-s']))
     p = Population(int(options['-ne']),
-                   teta,
+                   teta_init,
+                   float(options['-ds']),
                    omega,
                    i)
     for generation in range(int(options['-t'])):
         print generation
-        p.next_generation(teta * float(options['-ds']))
+        p.next_generation(delta_teta)
+        p.print_moments()
 
 if __name__ == '__main__':
     options = docopt(__doc__)
