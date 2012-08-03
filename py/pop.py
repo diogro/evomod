@@ -35,9 +35,11 @@ class Individual:
 
     def generate(self):
         """creates an ind with Individual parameters"""
-        b = np.ones((self.p, 2 * self.m),
-                    dtype=float)              # binary ontogenetic matrix
-        y = np.zeros(2 * self.m, dtype=float)  # gene vector
+        b = np.concatenate((np.ones(self.m * self.p),   # binary ontogenetic
+                           np.zeros(self.m * self.p)))  # matrix
+        np.random.shuffle(b)
+        b = b.reshape((self.p, 2 * self.m))
+        y = np.random.normal(0, self.sigma, size=2 * self.m)  # gene vector
         x = np.dot(b, y)                       # additive effects vector
         z = x + np.random.normal(0, self.amb,
                                  self.p)       # phenotipic values vector
@@ -176,10 +178,10 @@ class Population:
         xmean = xs.mean(axis=0)
         ymean = ys.mean(axis=0)
         bmean = bs.mean(axis=0)
-        phenotipic = np.cov(zs, rowvar=0)
-        genetic = np.cov(xs, rowvar=0)
-        corr_phenotipic = np.corrcoef(zs, rowvar=0)
-        corr_genetic = np.corrcoef(xs, rowvar=0)
+        phenotipic = np.cov(zs, rowvar=0, bias=1)
+        genetic = np.cov(xs, rowvar=0, bias=1)
+        corr_phenotipic = np.corrcoef(zs, rowvar=0, bias=1)
+        corr_genetic = np.corrcoef(xs, rowvar=0, bias=1)
         return {'y.mean': ymean,
                 'b.mean': bmean,
                 'z.mean': zmean,
