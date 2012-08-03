@@ -5,8 +5,8 @@ Options:
    -h --help              show this
    -l loci                number of loci [default: 20]
    -p traits              number of traits [default: 10]
-   -m mu                  genetic mutation rate [default: 5e-3]
-   -b mu_b                ontogenetic mutation rate [default: 1e-3]
+   -m mu                  genetic mutation rate [default: 5e-4]
+   -b mu_b                ontogenetic mutation rate [default: 1e-4]
    -n ne                  population size [default: 2500]
    -s sigma               mutation size [default: 0.2]
    -e amb                 enviromental noise [default: 0.8]
@@ -176,16 +176,10 @@ class Population:
         xmean = xs.mean(axis=0)
         ymean = ys.mean(axis=0)
         bmean = bs.mean(axis=0)
-        phenotipic = np.cov(zs.transpose())
-        genetic = np.cov(xs.transpose())
-        outer_diagonal = phenotipic[np.diag_indices_from(phenotipic)]
-        outer_diagonal = np.sqrt(outer_diagonal[:, np.newaxis] *
-                                 outer_diagonal)
-        corr_phenotipic = phenotipic / outer_diagonal
-        outer_diagonal = genetic[np.diag_indices_from(genetic)]
-        outer_diagonal = np.sqrt(outer_diagonal[:, np.newaxis] *
-                                 outer_diagonal)
-        corr_genetic = genetic / outer_diagonal
+        phenotipic = np.cov(zs, rowvar=0)
+        genetic = np.cov(xs, rowvar=0)
+        corr_phenotipic = np.corrcoef(zs, rowvar=0)
+        corr_genetic = np.corrcoef(xs, rowvar=0)
         return {'y.mean': ymean,
                 'b.mean': bmean,
                 'z.mean': zmean,
