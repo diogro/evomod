@@ -74,13 +74,12 @@ class Individual:
         b = np.zeros((self.p, 2 * self.m),
                      dtype=float)              # binary ontogenetic matrix
         y = np.zeros(2 * self.m, dtype=float)  # gene vector
-        for locus in range(self.m):
-            alele_1 = np.random.randint(0, 2)
-            alele_2 = np.random.randint(0, 2)
-            y[2 * locus] = ind_1['y'][2 * locus + alele_1]
-            y[2 * locus + 1] = ind_2['y'][2 * locus + alele_2]
-            b[:, 2 * locus] = ind_1['b'][:, 2 * locus + alele_1]
-            b[:, 2 * locus + 1] = ind_2['b'][:, 2 * locus + alele_2]
+        alele = np.random.randint(0, 2, size=2 * self.m)
+        for locus in xrange(self.m):
+            y[2 * locus] = ind_1['y'][2 * locus + alele[2 * locus]]
+            y[2 * locus + 1] = ind_2['y'][2 * locus + alele[2 * locus + 1]]
+            b[:, 2 * locus] = ind_1['b'][:, 2 * locus + alele[2 * locus]]
+            b[:, 2 * locus + 1] = ind_2['b'][:, 2 * locus + alele[2 * locus + 1]]
         x = np.dot(b, y)                       # additive effects vector
         z = x + np.random.normal(0, self.amb,
                                  self.p)       # phenotipic values vector
@@ -96,7 +95,7 @@ class Population:
         self.omega = omega
         self.current_gen = 0
         self.modules = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
-        self.pop = [indmod.generate() for k in range(n_e)]
+        self.pop = [indmod.generate() for k in xrange(n_e)]
         self.fitness = np.ones(n_e) / n_e
         self.pop_name = ('./dats/Ne.' + str(n_e) + '-mp.' + str(indmod.m) + '_'
                          + str(indmod.p) + '-mu_muB.' + str(indmod.mu) + '_'
@@ -106,13 +105,13 @@ class Population:
     def mutate(self):
         """mutates every individual of population"""
         #TODO Obviously parallel
-        for k in range(self.n_e):
+        for k in xrange(self.n_e):
             self.indmod.mutate(self.pop[k])
 
     def update_fitness(self):
         """calculates the fitness of every individual of population"""
         #TODO Obviously parallel
-        for k in range(self.n_e):
+        for k in xrange(self.n_e):
             self.fitness[k] = self.indmod.fitness(self.pop[k],
                                                   self.omega,
                                                   self.teta)
@@ -135,7 +134,7 @@ class Population:
                                  p=self.fitness, replace=True)
         new_pop = []
         #TODO Obviously parallel
-        for k in range(self.n_e):
+        for k in xrange(self.n_e):
             new_pop.append(self.indmod.cross(self.pop[sires[k]],
                                              self.pop[dames[k]]))
         self.pop = new_pop
@@ -227,21 +226,21 @@ def mat_print(matrix, out_format, output, generation):
     s = str(generation) + ' '
     if (out_format == 'vector'):
         n = len(matrix)
-        for i in range(n):
+        for i in xrange(n):
                 s += str(matrix[i]) + ' '
     else:
         n, m = matrix.shape
 
     if (out_format == 'total'):
-        for i in range(n):
-            for j in range(m):
+        for i in xrange(n):
+            for j in xrange(m):
                 s += str(matrix[i, j]) + ' '
     if (out_format == 'tri'):
-        for i in range(1, n):
-            for j in range(i):
+        for i in xrange(1, n):
+            for j in xrange(i):
                 s += str(matrix[i, j]) + ' '
     if (out_format == 'diag'):
-        for i in range(n):
+        for i in xrange(n):
                 s += str(matrix[i, i]) + ' '
     s += '\n'
     output.write(s)
@@ -263,7 +262,7 @@ def avg_ratio(matrix, modules):
                     mask[i, j] = -17  # any negative integer
                 else:
                     mask[i, j] = k
-    for module in range(k + 1):
+    for module in xrange(k + 1):
         avgs.append(matrix[mask == module].mean())
     # avg ratio, avg+, avg-, avg by module
     return [np.mean(avgs[1:]) / avgs[0]] + [np.mean(avgs[1:])] + avgs
@@ -284,7 +283,7 @@ def main(options):
                    float(options['-d']),
                    omega,
                    i)
-    for generation in range(int(options['-t'])):
+    for generation in xrange(int(options['-t'])):
         print generation
         p.next_generation(delta_teta)
         p.print_moments()
