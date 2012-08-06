@@ -180,6 +180,8 @@ class Population:
         bmean = bs.mean(axis=0)
         phenotipic = np.cov(zs, rowvar=0, bias=1)
         genetic = np.cov(xs, rowvar=0, bias=1)
+        heridability = (genetic[np.diag_indices_from(genetic)] /
+                        phenotipic[np.diag_indices_from(phenotipic)])
         corr_phenotipic = np.corrcoef(zs, rowvar=0, bias=1)
         corr_genetic = np.corrcoef(xs, rowvar=0, bias=1)
         return {'y.mean': ymean,
@@ -188,6 +190,7 @@ class Population:
                 'x.mean': xmean,
                 'P': phenotipic,
                 'G': genetic,
+                'h2': heridability,
                 'corrP': corr_phenotipic,
                 'corrG': corr_genetic}
 
@@ -198,6 +201,7 @@ class Population:
         mat_print(mats['corrP'], 'tri', self.out_files['corrP'], gen)
         mat_print(mats['G'], 'diag', self.out_files['varG'], gen)
         mat_print(mats['P'], 'diag', self.out_files['varP'], gen)
+        mat_print(mats['h2'], 'diag', self.out_files['varH'], gen)
         mat_print(mats['y.mean'], 'vector', self.out_files['y.mean'], gen)
         mat_print(mats['z.mean'], 'vector', self.out_files['z.mean'], gen)
         mat_print(mats['x.mean'], 'vector', self.out_files['x.mean'], gen)
