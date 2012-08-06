@@ -3,7 +3,7 @@
 
 Options:
    -h --help              show this
-   -l loci                number of loci [default: 20]
+   -l loci                number of loci [default: 200]
    -p traits              number of traits [default: 10]
    -m mu                  genetic mutation rate [default: 5e-4]
    -b mu_b                ontogenetic mutation rate [default: 1e-4]
@@ -95,37 +95,13 @@ class Population:
         self.teta = teta
         self.omega = omega
         self.current_gen = 0
+        self.modules = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
         self.pop = [indmod.generate() for k in range(n_e)]
         self.fitness = np.ones(n_e) / n_e
         self.pop_name = ('./dats/Ne.' + str(n_e) + '-mp.' + str(indmod.m) + '_'
                          + str(indmod.p) + '-mu_muB.' + str(indmod.mu) + '_'
                          + str(indmod.mu_b) + '-Delta_S.' + str(delta_s))
         self.out_files = self.set_outfile()
-
-    def set_outfile(self):
-        try:
-            os.makedirs('./dats/')
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise
-        varG = open(self.pop_name + '-varG.dat', "w")
-        varP = open(self.pop_name + '-varP.dat', "w")
-        varH = open(self.pop_name + '-varH.dat', "w")
-        corrG = open(self.pop_name + '-corrG.dat', "w")
-        corrP = open(self.pop_name + '-corrP.dat', "w")
-        z_traits = open(self.pop_name + '-traits_z.dat', "w")
-        y_traits = open(self.pop_name + '-traits_y.dat', "w")
-        x_traits = open(self.pop_name + '-traits_x.dat', "w")
-        b_matrix = open(self.pop_name + '-b.dat', "w")
-        return {'varG': varG,
-                'varP': varP,
-                'varH': varH,
-                'corrG': corrG,
-                'corrP': corrP,
-                'b.mean': b_matrix,
-                'z.mean': z_traits,
-                'y.mean': y_traits,
-                'x.mean': x_traits}
 
     def mutate(self):
         """mutates every individual of population"""
@@ -184,6 +160,8 @@ class Population:
                         phenotipic[np.diag_indices_from(phenotipic)])
         corr_phenotipic = np.corrcoef(zs, rowvar=0, bias=1)
         corr_genetic = np.corrcoef(xs, rowvar=0, bias=1)
+        avgP = avg_ratio(corr_phenotipic, self.modules)
+        avgG = avg_ratio(corr_genetic, self.modules)
         return {'y.mean': ymean,
                 'b.mean': bmean,
                 'z.mean': zmean,
@@ -191,21 +169,58 @@ class Population:
                 'P': phenotipic,
                 'G': genetic,
                 'h2': heridability,
+                'avgP': avgP,
+                'avgG': avgG,
                 'corrP': corr_phenotipic,
                 'corrG': corr_genetic}
 
     def print_moments(self):
         mats = self.moments()
         gen = self.current_gen
+        mat_print(self.teta, 'vector', self.out_files['teta'], gen)
         mat_print(mats['corrG'], 'tri', self.out_files['corrG'], gen)
         mat_print(mats['corrP'], 'tri', self.out_files['corrP'], gen)
         mat_print(mats['G'], 'diag', self.out_files['varG'], gen)
         mat_print(mats['P'], 'diag', self.out_files['varP'], gen)
         mat_print(mats['h2'], 'vector', self.out_files['varH'], gen)
+        mat_print(mats['avgP'], 'vector', self.out_files['avgP'], gen)
+        mat_print(mats['avgG'], 'vector', self.out_files['avgG'], gen)
+        mat_print(mats['h2'], 'vector', self.out_files['varH'], gen)
         mat_print(mats['y.mean'], 'vector', self.out_files['y.mean'], gen)
         mat_print(mats['z.mean'], 'vector', self.out_files['z.mean'], gen)
         mat_print(mats['x.mean'], 'vector', self.out_files['x.mean'], gen)
         mat_print(mats['b.mean'], 'total', self.out_files['b.mean'], gen)
+
+    def set_outfile(self):
+        try:
+            os.makedirs('./dats/')
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
+        varG = open(self.pop_name + '-varG.dat', "w")
+        varP = open(self.pop_name + '-varP.dat', "w")
+        varH = open(self.pop_name + '-varH.dat', "w")
+        corrP = open(self.pop_name + '-corrP.dat', "w")
+        corrG = open(self.pop_name + '-corrG.dat', "w")
+        avgP = open(self.pop_name + '-avgP.dat', "w")
+        avgG = open(self.pop_name + '-avgG.dat', "w")
+        z_traits = open(self.pop_name + '-traits_z.dat', "w")
+        y_traits = open(self.pop_name + '-traits_y.dat', "w")
+        x_traits = open(self.pop_name + '-traits_x.dat', "w")
+        b_matrix = open(self.pop_name + '-b.dat', "w")
+        teta = open(self.pop_name + '-teta.dat', "w")
+        return {'varG': varG,
+                'varP': varP,
+                'varH': varH,
+                'corrP': corrP,
+                'corrG': corrG,
+                'avgP': avgP,
+                'avgG': avgG,
+                'teta': teta,
+                'b.mean': b_matrix,
+                'z.mean': z_traits,
+                'y.mean': y_traits,
+                'x.mean': x_traits}
 
 
 def mat_print(matrix, out_format, output, generation):
