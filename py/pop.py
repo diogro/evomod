@@ -201,7 +201,7 @@ class Population:
         mat_print(mats['corrP'], 'tri', self.out_files['corrP'], gen)
         mat_print(mats['G'], 'diag', self.out_files['varG'], gen)
         mat_print(mats['P'], 'diag', self.out_files['varP'], gen)
-        mat_print(mats['h2'], 'diag', self.out_files['varH'], gen)
+        mat_print(mats['h2'], 'vector', self.out_files['varH'], gen)
         mat_print(mats['y.mean'], 'vector', self.out_files['y.mean'], gen)
         mat_print(mats['z.mean'], 'vector', self.out_files['z.mean'], gen)
         mat_print(mats['x.mean'], 'vector', self.out_files['x.mean'], gen)
@@ -231,6 +231,27 @@ def mat_print(matrix, out_format, output, generation):
     s += '\n'
     output.write(s)
     output.flush()
+
+
+def avg_ratio(matrix, modules):
+    """Calculates average correlation given between and within modules
+    given a correlation matrix and a list of modules"""
+    n, p = matrix.shape
+    mask = np.zeros((n, n), int)
+    avgs = []
+    k = 0  # number of modules
+    for traits in modules:
+        k = k + 1
+        for i in traits:
+            for j in traits:
+                if i == j:
+                    mask[i, j] = -17  # any negative integer
+                else:
+                    mask[i, j] = k
+    for module in range(k + 1):
+        avgs.append(matrix[mask == module].mean())
+    # avg ratio, avg+, avg-, avg by module
+    return [np.mean(avgs[1:]) / avgs[0]] + [np.mean(avgs[1:])] + avgs
 
 
 def main(options):
