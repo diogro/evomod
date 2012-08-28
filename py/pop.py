@@ -19,6 +19,8 @@ Options:
 import numpy as np
 import os
 import errno
+import multiprocessing as mp
+import functools as f
 #import matplotlib.pylab as mpl
 from docopt import docopt
 
@@ -63,6 +65,7 @@ class Individual:
             np.random.shuffle(mutation_mask)
             mutation_mask = mutation_mask.reshape((self.p, 2 * self.m))
             ind['b'] = (ind['b'] + mutation_mask) % 2
+        return ind
 
     def fitness(self, ind, omega, teta):
         """calculates ind fitness from population"""
@@ -85,6 +88,8 @@ class Individual:
                                  self.p)       # phenotipic values vector
         return {'y': y, 'x': x, 'z': z, 'b': b}
 
+def mut(p, i):
+    return p.indmod.mutate(p.pop[i])
 
 class Population:
     """class for population of Individuals"""
@@ -105,8 +110,9 @@ class Population:
     def mutate(self):
         """mutates every individual of population"""
         #TODO Obviously parallel
-        for k in xrange(self.n_e):
-            self.indmod.mutate(self.pop[k])
+
+        self.pop = pool.map(f.partial(mut, self), range(0,self.n_e))
+
 
     def update_fitness(self):
         """calculates the fitness of every individual of population"""
@@ -267,6 +273,8 @@ def avg_ratio(matrix, modules):
     # avg ratio, avg+, avg-, avg by module
     return [np.mean(avgs[1:]) / avgs[0]] + [np.mean(avgs[1:])] + avgs
 
+
+pool = mp.Pool()
 
 def main(options):
     teta_init = np.zeros(int(options['-p']))
