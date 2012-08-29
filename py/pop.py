@@ -88,8 +88,10 @@ class Individual:
                                  self.p)       # phenotipic values vector
         return {'y': y, 'x': x, 'z': z, 'b': b}
 
+
 def mut(p, i):
     return p.indmod.mutate(p.pop[i])
+
 
 class Population:
     """class for population of Individuals"""
@@ -111,8 +113,7 @@ class Population:
         """mutates every individual of population"""
         #TODO Obviously parallel
 
-        self.pop = pool.map(f.partial(mut, self), range(0,self.n_e))
-
+        self.pop = pool.map(f.partial(mut, self), range(0, self.n_e))
 
     def update_fitness(self):
         """calculates the fitness of every individual of population"""
@@ -275,6 +276,7 @@ def avg_ratio(matrix, modules):
 
 
 pool = mp.Pool()
+
 
 def main(options):
     teta_init = np.zeros(int(options['-p']))
