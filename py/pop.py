@@ -92,6 +92,7 @@ class Individual:
 def mut(p, i):
     return p.indmod.mutate(p.pop[i])
 
+
 def fit(p, i):
     fitness = p.indmod.fitness(p.pop[i],
                                p.omega,
@@ -99,6 +100,7 @@ def fit(p, i):
     if (np.isnan(fitness) or np.isinf(fitness)):
         fitness = 0.0
     return fitness
+
 
 class Population:
     """class for population of Individuals"""
@@ -123,14 +125,14 @@ class Population:
         self.pop = pool.map(f.partial(mut, self), range(0, self.n_e))
 
     def pupdate_fitness(self):
-        self.fitness = np.array(pool.map(f.partial(fit, self), range(0,
-            self.n_e)))
+        self.fitness = np.array(pool.map(f.partial(fit, self),
+                                         range(0, self.n_e)))
         fitness_total = self.fitness.sum()
         if (fitness_total == 0.0):
             self.fitness = np.ones(self.n_e) / self.n_e
         else:
             self.fitness /= fitness_total
- 
+
     def update_fitness(self):
         """calculates the fitness of every individual of population"""
         #TODO Obviously parallel
