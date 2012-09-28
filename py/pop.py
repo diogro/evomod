@@ -7,7 +7,7 @@ Options:
    -p traits              number of traits [default: 10]
    -m mu                  genetic mutation rate [default: 5e-4]
    -b mu_b                ontogenetic mutation rate [default: 1e-4]
-   -n ne                  population size [default: 2500]
+   -n ne                  population size [default: 25000]
    -s sigma               mutation size [default: 0.2]
    -e amb                 enviromental noise [default: 0.8]
    -v omega_var           selection variance [default: 1.0]
@@ -100,6 +100,9 @@ def fit(p, i):
         fitness = 0.0
     return fitness
 
+def cross(p, c):
+    return p.indmod.cross(p.pop[c[0]], p.pop[c[1]])
+
 class Population:
     """class for population of Individuals"""
     def __init__(self, n_e, teta, delta_s, omega, indmod):
@@ -150,16 +153,20 @@ class Population:
         """creates next generation by mutating then crossing with probability
         proportional do fitness"""
         self.mutate()
-        self.pupdate_fitness()
+        self.update_fitness()
         sires = np.random.choice(self.n_e, size=self.n_e,
                                  p=self.fitness, replace=True)
         dames = np.random.choice(self.n_e, size=self.n_e,
                                  p=self.fitness, replace=True)
+
+	pairs = zip(sires, dames)
         new_pop = []
         #TODO Obviously parallel
-        for k in xrange(self.n_e):
-            new_pop.append(self.indmod.cross(self.pop[sires[k]],
-                                             self.pop[dames[k]]))
+        #for k in xrange(self.n_e):
+        #    new_pop.append(self.indmod.cross(self.pop[sires[k]],
+        #                                     self.pop[dames[k]]))
+
+	new_pop = pool.map(f.partial(cross, self), pairs)
         self.pop = new_pop
         self.current_gen += 1
         self.teta += delta_s
@@ -291,8 +298,8 @@ def avg_ratio(matrix, modules):
     return [np.mean(avgs[1:]) / avgs[0]] + [np.mean(avgs[1:])] + avgs
 
 
-pool = mp.Pool()
-
+pool = mp.Pool(4)
+pool.map(id, range(mp.cpu_count()))
 
 def main(options):
     teta_init = np.zeros(int(options['-p']))
