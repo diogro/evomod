@@ -7,7 +7,7 @@ Options:
    -p traits              number of traits [default: 10]
    -m mu                  genetic mutation rate [default: 5e-4]
    -b mu_b                ontogenetic mutation rate [default: 1e-4]
-   -n ne                  population size [default: 25000]
+   -n ne                  population size [default: 2500]
    -s sigma               mutation size [default: 0.2]
    -e amb                 enviromental noise [default: 0.8]
    -v omega_var           selection variance [default: 1.0]
@@ -24,6 +24,7 @@ import functools as f
 #import matplotlib.pylab as mpl
 from docopt import docopt
 
+cores = 10
 
 class Individual:
     """class for Individuals in a Population"""
@@ -89,21 +90,21 @@ class Individual:
         return {'y': y, 'x': x, 'z': z, 'b': b}
 
 
-def mut(p, i):
-    return p.indmod.mutate(p.pop[i])
+def mut(p, lp, o):
+    o.put(map(lambda i: p.indmod.mutate(p.pop[i]), lp))
+    return
 
-
-def fit(p, i):
-    fitness = p.indmod.fitness(p.pop[i],
+def fit(p, lp, o):
+    fitness = map(lambda i: p.indmod.fitness(p.pop[i],
                                p.omega,
-                               p.teta)
+                               p.teta), lp)
     if (np.isnan(fitness) or np.isinf(fitness)):
         fitness = 0.0
-    return fitness
+    o.put(fitness)
 
 
-def cross(p, c):
-    return p.indmod.cross(p.pop[c[0]], p.pop[c[1]])
+def cross(p, lc, o):
+    o.put(map(lambda c: p.indmod.cross(p.pop[c[0]], p.pop[c[1]]), lc))
 
 
 class Population:
@@ -125,12 +126,34 @@ class Population:
     def mutate(self):
         """mutates every individual of population"""
         #TODO Obviously parallel
-
-        self.pop = pool.map(f.partial(mut, self), range(0, self.n_e))
+        out = mp.Queue()
+        chuck = self.n_e/2
+        p = []
+        for i in xrange(2):
+            p.append(pool.Process(target=f.partial(mut, self),args=(range(i*chuck,
+                (i+1)*chuck), out)))
+            p[-1].start()
+        for i in xrange(2):
+            self.pop += out.get()
+        for i in xrange(2):
+            p[i].join()
+ #       self.pop = pool.map(f.partial(mut, self), range(0, self.n_e))
 
     def pupdate_fitness(self):
-        self.fitness = np.array(pool.map(f.partial(fit, self),
-                                         range(0, self.n_e)))
+        out = mp.Queue()
+        chunk = self.n_e/cores
+        procs = []
+        fitp = [] 
+
+        for i in range(cores):
+            procs.append(pool.Process(target=f.partial(fit, self),
+                args=(range(i*chunk, (i+1)*chunk), out)))
+            procs[-1].start()
+            procs[-1].join()
+        for i in range(cores):
+            fitp += out.get()
+
+        self.fitness = np.array(fitp)
         fitness_total = self.fitness.sum()
         if (fitness_total == 0.0):
             self.fitness = np.ones(self.n_e) / self.n_e
@@ -152,25 +175,44 @@ class Population:
         else:
             self.fitness /= fitness_total
 
+    def crossp(self, pairs):
+        out = mp.Queue()
+        chunk = len(pairs)/cores
+        procs = []
+        pop = [] 
+
+        for i in range(cores):
+            procs.append(pool.Process(target=f.partial(cross, self),
+                args=(pairs[i*chunk:(i+1)*chunk], out)))
+            procs[-1].start()
+            procs[-1].join()
+        for i in range(cores):
+            pop += out.get()
+
+        return pop
+
     def next_generation(self, delta_s):
         """creates next generation by mutating then crossing with probability
         proportional do fitness"""
+        print "MUTA"
         self.mutate()
-        self.update_fitness()
+        print "FIT"
+        self.pupdate_fitness()
         sires = np.random.choice(self.n_e, size=self.n_e,
                                  p=self.fitness, replace=True)
         dames = np.random.choice(self.n_e, size=self.n_e,
                                  p=self.fitness, replace=True)
 
         pairs = zip(sires, dames)
-        new_pop = []
-        #TODO Obviously parallel
-        #for k in xrange(self.n_e):
-        #    new_pop.append(self.indmod.cross(self.pop[sires[k]],
-        #                                     self.pop[dames[k]]))
+        if len(pairs) >= 100:
+            self.pop = self.crossp(pairs)
+        else:
+            new_pop = []
+            for k in xrange(self.n_e):
+                new_pop.append(self.indmod.cross(self.pop[sires[k]],
+                                                 self.pop[dames[k]]))
+            self.pop = new_pop
 
-        new_pop = pool.map(f.partial(cross, self), pairs)
-        self.pop = new_pop
         self.current_gen += 1
         self.teta += delta_s
 
@@ -301,9 +343,7 @@ def avg_ratio(matrix, modules):
     return [np.mean(avgs[1:]) / avgs[0]] + [np.mean(avgs[1:])] + avgs
 
 
-pool = mp.Pool(4)
-pool.map(id, range(mp.cpu_count()))
-
+pool = mp.Pool(cores)
 
 def main(options):
     teta_init = np.zeros(int(options['-p']))
