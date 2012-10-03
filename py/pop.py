@@ -98,8 +98,9 @@ def fit(p, lp, o):
     fitness = map(lambda i: p.indmod.fitness(p.pop[i],
                                p.omega,
                                p.teta), lp)
-    if (np.isnan(fitness) or np.isinf(fitness)):
-        fitness = 0.0
+    for i in xrange(len(fitness)):
+        if (np.isnan(fitness[i]) or np.isinf(fitness[i])):
+          fitness[i] = 0.0
     o.put(fitness)
 
 
