@@ -1,4 +1,4 @@
-CFLAGS=-O3 -Wall -I/usr/local/include
+CFLAGS=-O3 -Wall -I/usr/local/include -DHAVE_INLINE
 LDFLAGS=-lgsl -lgslblas -static
 
 evomod.exe: main.o evo_pop_functions.o
