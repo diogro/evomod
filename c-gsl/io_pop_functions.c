@@ -107,12 +107,12 @@ void population_replicate (Population *dest, const Population *src)
     population_copy (dest, src);
 }
 
-void population_fprintf ( const Population *pop, FILE *stream)
+void population_fprintf (const Population *pop, FILE *stream)
 {
     int i;
     for (i = 0; i < pop->n_e; i++){
-        gsl_vector_fprintf(stream, pop->y[i]);
-        gsl_matrix_fprintf(stream, pop->b[i]);
+        gsl_vector_fprintf(stream, pop->y[i], "%f");
+        gsl_matrix_fprintf(stream, pop->b[i], "%f");
     }
 }
 
@@ -123,4 +123,5 @@ void population_fscanf (Population *pop, FILE *stream)
         gsl_vector_fscanf(stream, pop->y[i]);
         gsl_matrix_fscanf(stream, pop->b[i]);
     }
-}
+} 
+

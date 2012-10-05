@@ -7,7 +7,7 @@ typedef struct {
     int p; // number of traits
     int m; // number of (diploid) loci
     int burn_in;  // number of drift generations
-    int seletiva; // number of selective generations
+    int selective; // number of selective generations
     int current_gen; // current generation
     double mu; // genotipic mutation rate
     double mu_b; // ontogenetic mutatation rate
@@ -21,10 +21,10 @@ typedef struct {
     gsl_matrix *mean_b; // mean additive effects
     gsl_vector *mean_x; // mean additive effects
     gsl_vector *mean_z; // mean phenotipic values
-    gsl_matrix **g_matrix; // additive covariance matrix
-    gsl_matrix **p_matrix; // phenotipic covarance matrix
-    gsl_matrix **corr_g; // additive correlation matrix
-    gsl_matrix **corr_p; // phenotipic correlation matrix
+    gsl_matrix *g_matrix; // additive covariance matrix
+    gsl_matrix *p_matrix; // phenotipic covarance matrix
+    gsl_matrix *corr_g; // additive correlation matrix
+    gsl_matrix *corr_p; // phenotipic correlation matrix
     gsl_vector *theta; // optimal position
-    gsl_matrix **omega; // selective surface covariance structure
+    gsl_matrix *omega; // selective surface covariance structure
 } Population;
