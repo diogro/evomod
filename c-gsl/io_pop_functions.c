@@ -71,7 +71,7 @@ void population_free (Population *pop)
     free(pop);
 }
 
-void population_copy (Population *dest, const Population *src)
+void population_replicate (Population *dest, const Population *src)
 {
     int i;
     dest->n_e = src->n_e;
@@ -107,6 +107,36 @@ void population_copy (Population *dest, const Population *src)
     pop->corr_p = gsl_matrix_alloc(pop->p, pop->p);
     pop->theta = gsl_vector_alloc(pop->p);
     pop->omega = gsl_matrix_alloc(pop->p, pop->p);
+    gsl_vector_memcpy(dest->mean_y, src->mean_y);
+    gsl_matrix_memcpy(dest->mean_b, src->mean_b);  
+    gsl_vector_memcpy(dest->mean_x, src->mean_x);   
+    gsl_vector_memcpy(dest->mean_z, src->mean_z);   
+    gsl_matrix_memcpy(dest->g_matrix, src->g_matrix); 
+    gsl_matrix_memcpy(dest->p_matrix, src->p_matrix); 
+    gsl_matrix_memcpy(dest->corr_g, src->corr_g);   
+    gsl_matrix_memcpy(dest->corr_p, src->corr_p);   
+    gsl_vector_memcpy (dest->theta, src->theta);
+    gsl_matrix_memcpy (dest->omega, src->omega);
+}
+
+void population_copy (Population *dest, const Population *src)
+{
+    int i;
+    dest->n_e = src->n_e;
+    dest->p = src->p;
+    dest->m = src->m;
+    dest->burn_in = src->burn_in;
+    dest->selective = src->selective;
+    dest->mu = src->mu;
+    dest->mu_b = src->mu_b;
+    dest->sigma = src->sigma;
+    dest->v_e = src->v_e;
+    for (i = 0; i < pop->n_e; i++){
+        gsl_vector_memcpy(dest->y[i], src->y[i]);
+        gsl_matrix_memcpy(dest->b[i], src->b[i]);
+        gsl_vector_memcpy(dest->x[i], src->x[i]);
+        gsl_vector_memcpy(dest->z[i], src->z[i]);
+    }
     gsl_vector_memcpy(dest->mean_y, src->mean_y);
     gsl_matrix_memcpy(dest->mean_b, src->mean_b);  
     gsl_vector_memcpy(dest->mean_x, src->mean_x);   
