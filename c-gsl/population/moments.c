@@ -26,8 +26,8 @@ void population_moments (Population *pop)
     covariance_calc (pop->z, pop->n_e, pop->p_matrix, pop->corr_p){
 }           
 
-void covariance_calc (const gsl_vector ** data, const int n_e, gsl_matrix * cov, gsl_matrix * corr){
-    
+void covariance_calc (const gsl_vector ** data, const int n_e, gsl_matrix * cov, gsl_matrix * corr)
+{
     int k, i, j;
     double data_i[n_e], data_j[n_e];
     double covariance, correlation;
