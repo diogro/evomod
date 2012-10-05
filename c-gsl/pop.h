@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
+  
 typedef struct {
     int n_e; // population size
     int p; // number of traits
