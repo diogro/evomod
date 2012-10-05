@@ -20,21 +20,15 @@ void population_alloc (const int n_e, const int p, const int m,
     pop->v_e = v_e;
 
     pop->y = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
-    for (i = 0; i < pop->n_e; i++)
-        pop->y[i] = gsl_vector_alloc(pop->m);
-
     pop->b = (gsl_matrix **) malloc (pop->n_e*sizeof(gsl_matrix *));
-    for (i = 0; i < pop->n_e; i++)
-        pop->b[i] = gsl_matrix_alloc(pop->p, pop->m);
-
     pop->x = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
-    for (i = 0; i < pop->n_e; i++)
-        pop->x[i] = gsl_vector_alloc(pop->p);
-
     pop->z = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
-    for (i = 0; i < pop->n_e; i++)
+    for (i = 0; i < pop->n_e; i++){
+        pop->y[i] = gsl_vector_alloc(pop->m);
+        pop->b[i] = gsl_matrix_alloc(pop->p, pop->m);
+        pop->x[i] = gsl_vector_alloc(pop->p);
         pop->z[i] = gsl_vector_alloc(pop->p);
-
+    }
     pop->mean_y = gsl_vector_alloc(pop->m);
     pop->mean_b = gsl_matrix_alloc(pop->p, pop->m);
     pop->mean_x = gsl_vector_alloc(pop->p);
@@ -45,8 +39,8 @@ void population_alloc (const int n_e, const int p, const int m,
     pop->corr_g = gsl_matrix_alloc(pop->p, pop->p);
     pop->corr_p = gsl_matrix_alloc(pop->p, pop->p);
 
-    gsl_vector_memcpy (pop->theta, theta)
-    gsl_matrix_memcpy (pop->omega, omega)
+    gsl_vector_memcpy (pop->theta, theta);
+    gsl_matrix_memcpy (pop->omega, omega);
 }
 
 void population_free (Population *pop)
@@ -70,7 +64,41 @@ void population_free (Population *pop)
     gsl_matrix_free(pop->p_matrix);
     gsl_matrix_free(pop->corr_g);
     gsl_matrix_free(pop->corr_p);
-    gsl_vector_free(pop->theta)
-    gsl_matrix_free(pop->omega)
+    gsl_vector_free(pop->theta);
+    gsl_matrix_free(pop->omega);
     free(pop);
+}
+
+void population_copy (Population *dest, const Population *src)
+{
+    int i;
+    dest->n_e = src->n_e;
+    dest->p = src->p;
+    dest->m = src->m;
+    dest->burn_in = src->burn_in;
+    dest->selective = src->selective;
+    dest->mu = src->mu;
+    dest->mu_b = src->mu_b;
+    dest->sigma = src->sigma;
+    dest->v_e = src->v_e;
+    dest->y = (gsl_vector **) malloc (dest->n_e*sizeof(gsl_vector *));
+    dest->b = (gsl_matrix **) malloc (dest->n_e*sizeof(gsl_matrix *));
+    dest->x = (gsl_vector **) malloc (dest->n_e*sizeof(gsl_vector *));
+    dest->z = (gsl_vector **) malloc (dest->n_e*sizeof(gsl_vector *));
+    for (i = 0; i < pop->n_e; i++){
+        gsl_vector_memcpy(dest->y[i], src->y[i]);
+        gsl_matrix_memcpy(dest->b[i], src->b[i]);
+        gsl_vector_memcpy(dest->x[i], src->x[i]);
+        gsl_vector_memcpy(dest->z[i], src->z[i]);
+    }
+    gsl_vector_memcpy(dest->mean_y, src->mean_y);
+    gsl_matrix_memcpy(dest->mean_b, src->mean_b);  
+    gsl_vector_memcpy(dest->mean_x, src->mean_x);   
+    gsl_vector_memcpy(dest->mean_z, src->mean_z);   
+    gsl_matrix_memcpy(dest->g_matrix, src->g_matrix); 
+    gsl_matrix_memcpy(dest->p_matrix, src->p_matrix); 
+    gsl_matrix_memcpy(dest->corr_g, src->corr_g);   
+    gsl_matrix_memcpy(dest->corr_p, src->corr_p);   
+    gsl_vector_memcpy (dest->theta, src->theta);
+    gsl_matrix_memcpy (dest->omega, src->omega);
 }
