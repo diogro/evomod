@@ -128,15 +128,15 @@ class Population:
         """mutates every individual of population"""
         #TODO Obviously parallel
         out = mp.Queue()
-        chuck = self.n_e/2
+        chuck = self.n_e/cores
         p = []
-        for i in xrange(2):
+        for i in xrange(cores):
             p.append(pool.Process(target=f.partial(mut, self),args=(range(i*chuck,
                 (i+1)*chuck), out)))
             p[-1].start()
-        for i in xrange(2):
+        for i in xrange(cores):
             self.pop += out.get()
-        for i in xrange(2):
+        for i in xrange(cores):
             p[i].join()
  #       self.pop = pool.map(f.partial(mut, self), range(0, self.n_e))
 

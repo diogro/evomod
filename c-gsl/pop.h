@@ -17,6 +17,8 @@ typedef struct {
     gsl_matrix **b; // ontogenetic matrix of population
     gsl_vector **x; // additive effects
     gsl_vector **z; // phenotipic values
+    gsl_vector *mean_y; // mean phenotipic values
+    gsl_matrix *mean_b; // mean additive effects
     gsl_vector *mean_x; // mean additive effects
     gsl_vector *mean_z; // mean phenotipic values
     gsl_matrix **g_matrix; // additive covariance matrix
