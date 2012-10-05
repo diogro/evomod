@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_rng.h>
 #include "pop.h"
 
 void population_alloc (const int n_e, const int p, const int m,
@@ -125,3 +126,12 @@ void population_fscanf (Population *pop, FILE *stream)
     }
 } 
 
+void population_random_init (Population *pop)
+{
+    int k, i, j;
+    for (k = 0; k < pop->n_e; k++){
+        for (i = 0; i < pop->m; i++){
+            gsl_matrix_set (pop->y[k], i, )
+            for (j = 0
+
+}
