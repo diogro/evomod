@@ -48,3 +48,29 @@ void population_alloc (const int n_e, const int p, const int m,
     gsl_vector_memcpy (pop->theta, theta)
     gsl_matrix_memcpy (pop->omega, omega)
 }
+
+void population_free (Population *pop)
+{
+    int i;
+    for (i = 0; i < pop->n_e; i++){
+        gsl_vector_free(pop->y[i]);
+        gsl_matrix_free(pop->b[i]);
+        gsl_vector_free(pop->x[i]);
+        gsl_vector_free(pop->z[i]);
+    }
+    free(pop->y);
+    free(pop->b);
+    free(pop->x);
+    free(pop->z);
+    gsl_vector_free(pop->mean_y);
+    gsl_matrix_free(pop->mean_b);
+    gsl_vector_free(pop->mean_x);
+    gsl_vector_free(pop->mean_z);
+    gsl_matrix_free(pop->g_matrix);
+    gsl_matrix_free(pop->p_matrix);
+    gsl_matrix_free(pop->corr_g);
+    gsl_matrix_free(pop->corr_p);
+    gsl_vector_free(pop->theta)
+    gsl_matrix_free(pop->omega)
+    free(pop);
+}
