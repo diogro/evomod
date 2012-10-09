@@ -3,6 +3,8 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_sf_exp.h>
 #include "pop.h"
 
 void mutate_ind(const gsl_rng *r, Population *pop, const int ind)
@@ -51,17 +53,15 @@ void population_mutate (const gsl_rng *r, Population * pop)
     }
 }
 
-double fitness_ind (const Population * pop, const int ind, const gsl_matrix * omega_cholesky)
+void fitness_ind (Population * pop, const int ind, const gsl_matrix * omega_cholesky)
 {
-    double *fitness;
-    fitness = (double *) malloc(sizeof(double));
     gsl_vector * theta_dist = gsl_vector_alloc (pop->p);
     gsl_vector * aux = gsl_vector_alloc (pop->p);
     gsl_vector_memcpy (theta_dist, pop->z[ind]);
     gsl_vector_sub (theta_dist, pop->theta);
     gsl_linalg_cholesky_solve (omega_cholesky, theta_dist, aux);
-    gsl_blas_ddot (theta_dist, aux, *fitness);
-    return (gsl_sf_exp((-1./2.)*(*fitness)));
+    gsl_blas_ddot (theta_dist, aux, &pop->fitness[ind]);
+    pop->fitness[ind] = gsl_sf_exp((-1./2.)*(pop->fitness[ind]));
 }
 
 void population_fitness (Population * pop)
@@ -71,6 +71,6 @@ void population_fitness (Population * pop)
     gsl_matrix_memcpy (omega_cholesky, pop->omega);
     gsl_linalg_cholesky_decomp (omega_cholesky);
     for (k = 0; k < pop->n_e; k++) {
-        pop->fitness[k] = fitness_ind (pop, k, omega_cholesky);
+        fitness_ind (pop, k, omega_cholesky);
     }
 }
