@@ -13,6 +13,7 @@ typedef struct {
     double mu_b; // ontogenetic mutatation rate
     double sigma; // mutation variance
     double v_e; // envairomental variance
+    double *fitness;
     gsl_vector **y; // genome of population
     gsl_matrix **b; // ontogenetic matrix of population
     gsl_vector **x; // additive effects
