@@ -1,5 +1,5 @@
 CFLAGS=-O3 -Wall -I/usr/local/include -DHAVE_INLINE
-LDFLAGS=-lgsl -lgslblas -static
+LDFLAGS=-lgsl -lgslcblas -static
 COMPILER=gcc
 
 evomod.exe: main.o evolution.o
