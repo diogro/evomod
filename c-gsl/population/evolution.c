@@ -62,6 +62,7 @@ void fitness_ind (Population * pop, const int ind, const gsl_matrix * omega_chol
     gsl_linalg_cholesky_solve (omega_cholesky, theta_dist, aux);
     gsl_blas_ddot (theta_dist, aux, &pop->fitness[ind]);
     pop->fitness[ind] = gsl_sf_exp((-1./2.)*(pop->fitness[ind]));
+    // TODO: inf and NaN check on fitness values 
 }
 
 void population_fitness (Population * pop)
@@ -73,4 +74,20 @@ void population_fitness (Population * pop)
     for (k = 0; k < pop->n_e; k++) {
         fitness_ind (pop, k, omega_cholesky);
     }
+}
+
+void choose_mates (const gsl_rng *r, const Population * pop, int * mates)
+{
+    unsigned int *n, k, i, ind = 0;
+    n = (unsigned int *) malloc(pop->n_e*sizeof(unsigned int));
+    gsl_ran_multinomial (r, pop->n_e, pop->n_e, pop->fitness, n);
+    for ( k = 0; k < pop->n_e; k++){
+        if ( n[k] > 0){
+            for ( i = 0; i < n[k]; i++){
+                mates[ind] = k;
+                ind++;
+            }
+        }
+    }
+    gsl_ran_shuffle (r, mates, pop->n_e, sizeof(int));
 }
