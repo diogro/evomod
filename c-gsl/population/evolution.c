@@ -1,9 +1,11 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h> 
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_math.h>
 #include "pop.h"
 
-void mutate_ind(const gsl_rng *r, Population *pop, int ind)
+void mutate_ind(const gsl_rng *r, Population *pop, const int ind)
 {
     unsigned int mutation_num, mut_i;
     unsigned int *b_mut_idx, *b_pos, bi;
@@ -20,7 +22,6 @@ void mutate_ind(const gsl_rng *r, Population *pop, int ind)
         }
     }
 
-    
     mutation_num = gsl_ran_binomial(r, pop->mu_b, pop->m*pop->p); 
 
     if (mutation_num > 0) {
@@ -41,10 +42,24 @@ void mutate_ind(const gsl_rng *r, Population *pop, int ind)
         }
     }
 }
+
 void population_mutate (const gsl_rng *r, Population * pop)
 {
     int k;
     for ( k = 0; k < pop->n_e; k++){
         mutate_ind(r, pop, k);
     }
+}
+
+double fitness_ind (const Population * pop, const int ind, const gsl_matrix * omega_cholesky)
+{
+    double *fitness;
+    fitness = (double *) malloc(sizeof(double));
+    gsl_vector * theta_dist = gsl_vector_alloc (pop->p);
+    gsl_vector * aux = gsl_vector_alloc (pop->p);
+    gsl_vector_memcpy (theta_dist, pop->z[ind]);
+    gsl_vector_sub (theta_dist, pop->theta);
+    gsl_linalg_cholesky_solve (omega_cholesky, theta_dist, aux);
+    gsl_blas_ddot (theta_dist, aux, *fitness);
+    return (gsl_sf_exp((-1./2.)*(*fitness)));
 }
