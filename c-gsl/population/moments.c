@@ -5,7 +5,7 @@
 #include <gsl/gsl_statistics_double.h>
 #include "pop.h"
 
-void covariance_calc (const gsl_vector ** data, const int n_e, const int p, gsl_matrix * cov, gsl_matrix * corr)
+void covariance_calc (gsl_vector ** data, const int n_e, const int p, gsl_matrix * cov, gsl_matrix * corr)
 {
     int k, i, j;
     double data_i[n_e], data_j[n_e];
