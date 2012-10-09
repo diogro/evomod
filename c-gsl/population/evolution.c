@@ -40,5 +40,11 @@ void mutate_ind(const gsl_rng *r, Population *pop, int ind)
            gsl_matrix_set(pop->b[ind], b_x, b_y, (unsigned int)(gsl_matrix_get(pop->b[ind], b_x, b_y) + b_rand) % 2);
         }
     }
- 
+}
+void population_mutate (const gsl_rng *r, Population * pop)
+{
+    int k;
+    for ( k = 0; k < pop->n_e; k++){
+        mutate_ind(r, pop, k);
+    }
 }
