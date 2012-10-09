@@ -63,3 +63,14 @@ double fitness_ind (const Population * pop, const int ind, const gsl_matrix * om
     gsl_blas_ddot (theta_dist, aux, *fitness);
     return (gsl_sf_exp((-1./2.)*(*fitness)));
 }
+
+void population_fitness (Population * pop)
+{
+    int k;
+    gsl_matrix * omega_cholesky = gsl_matrix_alloc (pop->p, pop->p);
+    gsl_matrix_memcpy (omega_cholesky, pop->omega);
+    gsl_linalg_cholesky_decomp (omega_cholesky);
+    for (k = 0; k < pop->n_e; k++) {
+        pop->fitness[k] = fitness_ind (pop, k, omega_cholesky);
+    }
+}

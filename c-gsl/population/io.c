@@ -19,6 +19,7 @@ void population_alloc (const int n_e, const int p, const int m,
     pop->mu_b = mu_b;
     pop->sigma = sigma;
     pop->v_e = v_e;
+    pop->fitness = (double *) malloc (pop->n_e*sizeof(double));
     pop->y = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
     pop->b = (gsl_matrix **) malloc (pop->n_e*sizeof(gsl_matrix *));
     pop->x = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
@@ -56,6 +57,7 @@ void population_free (Population *pop)
     free(pop->b);
     free(pop->x);
     free(pop->z);
+    free(pop->fitness);
     gsl_vector_free(pop->mean_y);
     gsl_matrix_free(pop->mean_b);
     gsl_vector_free(pop->mean_x);
@@ -82,6 +84,7 @@ void population_copy (Population *dest, const Population *src)
     dest->sigma = src->sigma;
     dest->v_e = src->v_e;
     for (i = 0; i < dest->n_e; i++){
+        dest->fitness[i] = src->fitness[i];
         gsl_vector_memcpy(dest->y[i], src->y[i]);
         gsl_matrix_memcpy(dest->b[i], src->b[i]);
         gsl_vector_memcpy(dest->x[i], src->x[i]);
