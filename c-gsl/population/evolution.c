@@ -7,6 +7,8 @@ void mutate_ind(const gsl_rng *r, Population *pop, int ind)
 {
     unsigned int mutation_num, mut_i;
     unsigned int *b_mut_idx, *b_pos, bi;
+    unsigned int allele, b_rand, b_x, b_y;
+    double new_allele;
 
     mutation_num = gsl_ran_binomial(r, pop->mu, pop->m);
 
@@ -22,20 +24,20 @@ void mutate_ind(const gsl_rng *r, Population *pop, int ind)
     mutation_num = gsl_ran_binomial(r, pop->mu_b, pop->m*pop->p); 
 
     if (mutation_num > 0) {
-        b_mut_idx = (unsigned int *) malloc(pop->m*pop->n*sizeof(unsigned int));
+        b_mut_idx = (unsigned int *) malloc(pop->m*pop->p*sizeof(unsigned int));
         b_pos = (unsigned int *) malloc(mutation_num*sizeof(unsigned int));
         
-        for (bi = 0; bi <= pop->m*pop->n; ++bi) {
+        for (bi = 0; bi <= pop->m*pop->p; ++bi) {
             b_mut_idx[bi] = bi;
         }
 
-        gsl_ran_choose(r, b_pos, mutation_num, b_mut_idx, pop->m*pop->n, sizeof(unsigned int));
+        gsl_ran_choose(r, b_pos, mutation_num, b_mut_idx, pop->m*pop->p, sizeof(unsigned int));
 
         for(mut_i = 0; mut_i < mutation_num; mut_i++) {
            b_rand = gsl_rng_uniform_int(r, 1); 
            b_x = b_pos[mut_i] % pop->m;
            b_y = b_pos[mut_i] / pop->m; 
-           gsl_matrix_set(pop->b[ind], b_x, b_y, (gsl_matrix_get(pop->b[ind], b_x, b_y) + b_rand) % 2);
+           gsl_matrix_set(pop->b[ind], b_x, b_y, (unsigned int)(gsl_matrix_get(pop->b[ind], b_x, b_y) + b_rand) % 2);
         }
     }
  
