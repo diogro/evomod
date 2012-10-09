@@ -104,7 +104,6 @@ void population_copy (Population *dest, const Population *src)
 
 void population_replicate (Population *dest, const Population *src)
 {
-    int i;
     population_alloc (src->n_e, src->p, src->m, src->burn_in, src->selective,
             src->mu, src->mu_b, src->sigma, src->v_e, src->theta, src->omega,
             dest);
