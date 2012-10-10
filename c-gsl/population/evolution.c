@@ -97,34 +97,61 @@ void cross_ind (const gsl_rng * r, const int m, const int p,
         const gsl_vector * ind_2_y, const gsl_matrix * ind_2_b,
         gsl_vector * new_ind_y, gsl_matrix * new_ind_b)
 {
-    //TODO: cross ind_1 and ind_2
+    int k, locus;
+    unsigned int *aleles;
+    double *aux_vector;
+    aleles = (unsigned int *) malloc(m*sizeof(unsigned int));
+    aux_vector = (double *) malloc(m*sizeof(double));
+    for (k = 0; k < m; k++){
+        aleles[k] = gsl_ran_bernoulli (r, 0.5)
+    }
+    for (locus = 0; locus < m/2; locus++){
+        gsl_vector_set (new_ind_y, 2 * locus    , gsl_vector_get (ind_1_y, 2 * locus+aleles[2 * locus  ]));
+        gsl_vector_set (new_ind_y, 2 * locus + 1, gsl_vector_get (ind_2_y, 2 * locus+aleles[2 * locus+1]));
+
+        gsl_matrix_get_col (aux_vector, ind_1_b, 2 * locus+aleles[2 * locus]);
+        gsl_matrix_set_col (new_ind_b, 2 * locus, aux_vector);
+
+        gsl_matrix_get_col (aux_vector, ind_2_b, 2 * locus+aleles[2 * locus +1]);
+        gsl_matrix_set_col (new_ind_b, 2 * locus + 1, aux_vector);
+    }
+    free(aux_vector);
+    free(aleles);
 }
 
 void population_cross (const gsl_rng *r, Population * pop)
 {
     int k;
+
+    /* TODO: Deixar esses caras globais? */
     int *dames, * sires;
     gsl_vector ** new_pop_y; 
     gsl_matrix ** new_pop_b; 
-
     new_pop_y = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
     new_pop_b = (gsl_matrix **) malloc (pop->n_e*sizeof(gsl_matrix *));
     for (k = 0; k < pop->n_e; k++){
         new_pop_y[k] = gsl_vector_alloc(pop->m);
         new_pop_b[k] = gsl_matrix_alloc(pop->p, pop->m);
-
+    }
     sires = (int *) malloc(pop->n_e*sizeof(int));
     dames = (int *) malloc(pop->n_e*sizeof(int));
+    /* Ou complica a paralelização? */
+
     choose_mates(r, pop, sires);
     choose_mates(r, pop, dames);
     for ( k = 0; k < pop->n_e; k++){
-        cross_ind (r, pop->m, pop->p, pop->y[sires[k]], pop->b[sires[k]], pop->y[dames[k]], pop->b[dames[k]], new_pop_y[k], new_pop_b[k])
+        cross_ind (r, pop->m, pop->p,
+                   pop->y[sires[k]], pop->b[sires[k]],
+                   pop->y[dames[k]], pop->b[dames[k]],
+                   new_pop_y[k], new_pop_b[k])
     }
     for ( k = 0; k < pop->n_e; k++){
         gsl_vector_memcpy(pop->y[k], new_pop_y[k]);
-        gsl_vector_free(new_pop_y[k])
+        gsl_vector_free(new_pop_y[k]);
         gsl_matrix_memcpy(pop->b[k], new_pop_b[k]);
-        gsl_matrix_free(new_pop_b[k])
+        gsl_matrix_free(new_pop_b[k]);
     }
+    free(new_pop_y);
+    free(new_pop_b);
     // TODO: fenotipic calc
 }
