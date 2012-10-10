@@ -157,3 +157,20 @@ void population_cross (const gsl_rng *r, Population * pop)
     free(dames);
     population_phenotype(r, pop);
 }
+
+void population_random_init (const gsl_rng *r, Population * pop)
+{
+    int i;
+    double mu, mu_b;
+    for (i = 0; i < pop->n_e; i++){
+        gsl_vector_set_zero(pop->y[i]);
+        gsl_matrix_set_zero(pop->b[i]);
+    }
+    mu = pop->mu;
+    mu_b = pop->mu_b;
+    pop->mu = 1.;
+    pop->mu_b = 0.5;
+    population_mutate(r, pop);
+    pop->mu = mu;
+    pop->mu_b = mu_b;
+}
