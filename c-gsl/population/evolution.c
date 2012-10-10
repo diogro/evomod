@@ -91,3 +91,40 @@ void choose_mates (const gsl_rng *r, const Population * pop, int * mates)
     }
     gsl_ran_shuffle (r, mates, pop->n_e, sizeof(int));
 }
+
+void cross_ind (const gsl_rng * r, const int m, const int p,
+        const gsl_vector * ind_1_y, const gsl_matrix * ind_1_b,
+        const gsl_vector * ind_2_y, const gsl_matrix * ind_2_b,
+        gsl_vector * new_ind_y, gsl_matrix * new_ind_b)
+{
+    //TODO: cross ind_1 and ind_2
+}
+
+void population_cross (const gsl_rng *r, Population * pop)
+{
+    int k;
+    int *dames, * sires;
+    gsl_vector ** new_pop_y; 
+    gsl_matrix ** new_pop_b; 
+
+    new_pop_y = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
+    new_pop_b = (gsl_matrix **) malloc (pop->n_e*sizeof(gsl_matrix *));
+    for (k = 0; k < pop->n_e; k++){
+        new_pop_y[k] = gsl_vector_alloc(pop->m);
+        new_pop_b[k] = gsl_matrix_alloc(pop->p, pop->m);
+
+    sires = (int *) malloc(pop->n_e*sizeof(int));
+    dames = (int *) malloc(pop->n_e*sizeof(int));
+    choose_mates(r, pop, sires);
+    choose_mates(r, pop, dames);
+    for ( k = 0; k < pop->n_e; k++){
+        cross_ind (r, pop->m, pop->p, pop->y[sires[k]], pop->b[sires[k]], pop->y[dames[k]], pop->b[dames[k]], new_pop_y[k], new_pop_b[k])
+    }
+    for ( k = 0; k < pop->n_e; k++){
+        gsl_vector_memcpy(pop->y[k], new_pop_y[k]);
+        gsl_vector_free(new_pop_y[k])
+        gsl_matrix_memcpy(pop->b[k], new_pop_b[k]);
+        gsl_matrix_free(new_pop_b[k])
+    }
+    // TODO: fenotipic calc
+}
