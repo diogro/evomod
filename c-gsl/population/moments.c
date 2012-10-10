@@ -3,6 +3,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_statistics_double.h>
+#include <gsl/gsl_randist.h>
 #include "pop.h"
 
 void covariance_calc (gsl_vector ** data, const int n_e, const int p, gsl_matrix * cov, gsl_matrix * corr)
@@ -52,7 +53,7 @@ void population_phenotype (const gsl_rng * r, Population * pop)
 {
     int ind, trait;    
     double new_trait;
-    for (ind = 0; ind < pop-n_e; ind++){
+    for (ind = 0; ind < pop->n_e; ind++){
         gsl_blas_dgemv(CblasNoTrans, 1.0, pop->b[ind], pop->y[ind], 0.0, pop->x[ind]);
         for (trait = 0; trait < pop->p; trait++){
             new_trait = gsl_vector_get(pop->x[ind], trait) + gsl_ran_gaussian(r, pop->v_e); 

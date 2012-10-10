@@ -5,7 +5,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_sf_exp.h>
-#include "pop.h"
+#include "moments.h"
 
 void mutate_ind(const gsl_rng *r, Population *pop, const int ind)
 {
@@ -100,11 +100,10 @@ void cross_ind (const gsl_rng * r, const int m, const int p,
 {
     int k, locus;
     unsigned int *aleles;
-    double *aux_vector;
+    gsl_vector * aux_vector  = gsl_vector_alloc(m);
     aleles = (unsigned int *) malloc(m*sizeof(unsigned int));
-    aux_vector = (double *) malloc(m*sizeof(double));
     for (k = 0; k < m; k++){
-        aleles[k] = gsl_ran_bernoulli (r, 0.5)
+        aleles[k] = gsl_ran_bernoulli (r, 0.5);
     }
     for (locus = 0; locus < m/2; locus++){
         gsl_vector_set (new_ind_y, 2 * locus    , gsl_vector_get (ind_1_y, 2 * locus+aleles[2 * locus  ]));
@@ -116,7 +115,7 @@ void cross_ind (const gsl_rng * r, const int m, const int p,
         gsl_matrix_get_col (aux_vector, ind_2_b, 2 * locus+aleles[2 * locus +1]);
         gsl_matrix_set_col (new_ind_b, 2 * locus + 1, aux_vector);
     }
-    free(aux_vector);
+    gsl_vector_free(aux_vector);
     free(aleles);
 }
 
@@ -144,7 +143,7 @@ void population_cross (const gsl_rng *r, Population * pop)
         cross_ind (r, pop->m, pop->p,
                    pop->y[sires[k]], pop->b[sires[k]],
                    pop->y[dames[k]], pop->b[dames[k]],
-                   new_pop_y[k], new_pop_b[k])
+                   new_pop_y[k], new_pop_b[k]);
     }
     for ( k = 0; k < pop->n_e; k++){
         gsl_vector_memcpy(pop->y[k], new_pop_y[k]);
@@ -154,5 +153,7 @@ void population_cross (const gsl_rng *r, Population * pop)
     }
     free(new_pop_y);
     free(new_pop_b);
-    population_phenotype(pop);
+    free(sires);
+    free(dames);
+    population_phenotype(r, pop);
 }
