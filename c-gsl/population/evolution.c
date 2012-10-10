@@ -154,5 +154,5 @@ void population_cross (const gsl_rng *r, Population * pop)
     }
     free(new_pop_y);
     free(new_pop_b);
-    // TODO: fenotipic calc
+    population_phenotype(pop);
 }
