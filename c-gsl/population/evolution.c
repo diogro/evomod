@@ -90,6 +90,7 @@ void choose_mates (const gsl_rng *r, const Population * pop, int * mates)
         }
     }
     gsl_ran_shuffle (r, mates, pop->n_e, sizeof(int));
+    free(n);
 }
 
 void cross_ind (const gsl_rng * r, const int m, const int p,
