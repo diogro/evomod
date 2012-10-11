@@ -80,6 +80,7 @@ void choose_mates (const gsl_rng *r, const Population * pop, int * mates)
 {
     unsigned int *n, k, i, ind = 0;
     n = (unsigned int *) malloc(pop->n_e*sizeof(unsigned int));
+    population_fitness(r, pop);
     gsl_ran_multinomial (r, pop->n_e, pop->n_e, pop->fitness, n);
     for ( k = 0; k < pop->n_e; k++){
         if ( n[k] > 0){
@@ -179,7 +180,6 @@ void population_random_init (const gsl_rng *r, Population * pop)
 
 void population_next_generation (const gsl_rng *r, Population * pop)
 {
-    population_fitness(r, pop);
     population_mutate(r, pop);
     population_cross(r, pop);
     pop->current_gen++;
