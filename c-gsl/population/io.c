@@ -83,6 +83,7 @@ void population_copy (Population *dest, const Population *src)
     dest->mu_b = src->mu_b;
     dest->sigma = src->sigma;
     dest->v_e = src->v_e;
+    dest->current_gen = src->current_gen;
     for (i = 0; i < dest->n_e; i++){
         dest->fitness[i] = src->fitness[i];
         gsl_vector_memcpy(dest->y[i], src->y[i]);
@@ -117,6 +118,7 @@ void population_fprintf (const Population *pop, FILE *stream)
         gsl_vector_fprintf(stream, pop->y[i], "%f");
         gsl_matrix_fprintf(stream, pop->b[i], "%f");
     }
+    fprintf(stream, "%d", pop->current_gen);
 }
 
 void population_fscanf (Population *pop, FILE *stream)
@@ -126,4 +128,5 @@ void population_fscanf (Population *pop, FILE *stream)
         gsl_vector_fscanf(stream, pop->y[i]);
         gsl_matrix_fscanf(stream, pop->b[i]);
     }
+    fscanf(stream, "%d", &pop->current_gen);
 } 

@@ -166,6 +166,7 @@ void population_random_init (const gsl_rng *r, Population * pop)
         gsl_vector_set_zero(pop->y[i]);
         gsl_matrix_set_zero(pop->b[i]);
     }
+    pop->current_gen = 0;
     mu = pop->mu;
     mu_b = pop->mu_b;
     pop->mu = 1.;
@@ -173,4 +174,13 @@ void population_random_init (const gsl_rng *r, Population * pop)
     population_mutate(r, pop);
     pop->mu = mu;
     pop->mu_b = mu_b;
+    population_phenotype(r, pop);
+}
+
+void population_next_generation (const gsl_rng *r, Population * pop)
+{
+    population_fitness(r, pop);
+    population_mutate(r, pop);
+    population_cross(r, pop);
+    pop->current_gen++;
 }
