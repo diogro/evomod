@@ -142,9 +142,9 @@ void population_cross (const gsl_rng *r, Population * pop)
     choose_mates(r, pop, dames);
     for ( k = 0; k < pop->n_e; k++){
         cross_ind (r, pop->m, pop->p,
-                   pop->y[sires[k]], pop->b[sires[k]],
-                   pop->y[dames[k]], pop->b[dames[k]],
-                   new_pop_y[k], new_pop_b[k]);
+                   pop->y[sires[k]],  pop->b[sires[k]],
+                   pop->y[dames[k]],  pop->b[dames[k]],
+                   new_pop_y[k],      new_pop_b[k]);
     }
     for ( k = 0; k < pop->n_e; k++){
         gsl_vector_memcpy(pop->y[k], new_pop_y[k]);
@@ -168,13 +168,13 @@ void population_random_init (const gsl_rng *r, Population * pop)
         gsl_matrix_set_zero(pop->b[i]);
     }
     pop->current_gen = 0;
-    mu = pop->mu;
-    mu_b = pop->mu_b;
-    pop->mu = 1.;
-    pop->mu_b = 0.5;
+    mu               = pop->mu;
+    mu_b             = pop->mu_b;
+    pop->mu          = 1.;
+    pop->mu_b        = 0.5;
     population_mutate(r, pop);
-    pop->mu = mu;
-    pop->mu_b = mu_b;
+    pop->mu          = mu;
+    pop->mu_b        = mu_b;
     population_phenotype(r, pop);
 }
 
