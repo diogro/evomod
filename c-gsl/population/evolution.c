@@ -101,22 +101,22 @@ void cross_ind (const gsl_rng * r, const int m, const int p,
 {
     int k, locus;
     unsigned int *aleles;
-    gsl_vector * aux_vector  = gsl_vector_alloc(m);
+    gsl_vector * b_column  = gsl_vector_alloc(m);
     aleles = (unsigned int *) malloc(m*sizeof(unsigned int));
     for (k = 0; k < m; k++){
         aleles[k] = gsl_ran_bernoulli (r, 0.5);
     }
     for (locus = 0; locus < m/2; locus++){
         gsl_vector_set (new_ind_y, 2 * locus    , gsl_vector_get (ind_1_y, 2 * locus+aleles[2 * locus  ]));
-        gsl_vector_set (new_ind_y, 2 * locus + 1, gsl_vector_get (ind_2_y, 2 * locus+aleles[2 * locus+1]));
+        gsl_vector_set (new_ind_y, 2 * locus + 1, gsl_vector_get (ind_2_y, 2 * locus+aleles[2 * locus + 1]));
 
-        gsl_matrix_get_col (aux_vector, ind_1_b, 2 * locus+aleles[2 * locus]);
-        gsl_matrix_set_col (new_ind_b, 2 * locus, aux_vector);
+        gsl_matrix_get_col (b_column, ind_1_b, 2 * locus+aleles[2 * locus]);
+        gsl_matrix_set_col (new_ind_b, 2 * locus, b_column);
 
-        gsl_matrix_get_col (aux_vector, ind_2_b, 2 * locus+aleles[2 * locus +1]);
-        gsl_matrix_set_col (new_ind_b, 2 * locus + 1, aux_vector);
+        gsl_matrix_get_col (b_column, ind_2_b, 2 * locus+aleles[2 * locus + 1]);
+        gsl_matrix_set_col (new_ind_b, 2 * locus + 1, b_column);
     }
-    gsl_vector_free(aux_vector);
+    gsl_vector_free(b_column);
     free(aleles);
 }
 
