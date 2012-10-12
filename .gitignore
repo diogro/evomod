@@ -1,1 +1,7 @@
-test*
+py/bin/
+py/build
+py/dats
+py/include
+py/lib
+py/local
+py/share
