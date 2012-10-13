@@ -130,3 +130,25 @@ void population_fscanf (Population *pop, FILE *stream)
     }
     fscanf(stream, "%d", &pop->current_gen);
 }
+
+void population_theta_read (Population * pop, FILE *stream)
+{
+    int i;
+    double theta_i;
+    for (i = 0; i < pop->p; i++) {
+        fscanf (stream, "%lf", &theta_i);
+        gsl_vector_set (pop->theta, i, theta_i);
+    }
+}
+
+void population_omega_read (Population * pop, FILE *stream)
+{
+    int i, j;
+    double omega_ij;
+    for (i = 0; i < pop->p; i++) {
+        for (j = 0; j < pop->p; j++) {
+            fscanf (stream, "%lf", &omega_ij);
+            gsl_matrix_set (pop->omega, i, j, omega_ij);
+        }
+    }
+}
