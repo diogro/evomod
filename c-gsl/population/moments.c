@@ -47,16 +47,16 @@ void population_moments (Population *pop)
     gsl_vector_scale (pop->mean_z, 1./pop->n_e);
     covariance_calc (pop->x, pop->n_e, pop->p, pop->g_matrix, pop->corr_g);
     covariance_calc (pop->z, pop->n_e, pop->p, pop->p_matrix, pop->corr_p);
-}           
+}
 
 void population_phenotype (const gsl_rng * r, Population * pop)
 {
-    int ind, trait;    
+    int ind, trait;
     double new_trait;
     for (ind = 0; ind < pop->n_e; ind++){
         gsl_blas_dgemv(CblasNoTrans, 1.0, pop->b[ind], pop->y[ind], 0.0, pop->x[ind]);
         for (trait = 0; trait < pop->p; trait++){
-            new_trait = gsl_vector_get(pop->x[ind], trait) + gsl_ran_gaussian(r, pop->v_e); 
+            new_trait = gsl_vector_get(pop->x[ind], trait) + gsl_ran_gaussian(r, pop->v_e);
             gsl_vector_set(pop->z[ind], trait, new_trait);
         }
     }

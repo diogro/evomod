@@ -1,6 +1,6 @@
 CFLAGS=-O3 -Wall -I/usr/local/include -DHAVE_INLINE
 LDFLAGS=-lgsl -lgslcblas -static
-COMPILER=gcc
+COMPILER=icc
 
 evomod.exe: main.o evolution.o
 	${COMPILER} -o evomod.exe main.o evo_pop_functions.o $(LDFLAGS) $(CFLAGS) 
