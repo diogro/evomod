@@ -53,27 +53,36 @@ void population_mutate (const gsl_rng *r, Population * pop)
     }
 }
 
-void fitness_ind (Population * pop, const int ind, const gsl_matrix * omega_cholesky)
+double fitness_ind (Population * pop, const int ind, const gsl_matrix * omega_cholesky)
 {
     gsl_vector * theta_dist = gsl_vector_alloc (pop->p);
-    gsl_vector * aux = gsl_vector_alloc (pop->p);
+    gsl_vector * theta_dist_t = gsl_vector_alloc (pop->p);
     gsl_vector_memcpy (theta_dist, pop->z[ind]);
     gsl_vector_sub (theta_dist, pop->theta);
-    gsl_linalg_cholesky_solve (omega_cholesky, theta_dist, aux);
-    gsl_blas_ddot (theta_dist, aux, &pop->fitness[ind]);
+    gsl_linalg_cholesky_solve (omega_cholesky, theta_dist, theta_dist_t);
+    gsl_blas_ddot (theta_dist, theta_dist_t, &pop->fitness[ind]);
     pop->fitness[ind] = gsl_sf_exp((-1./2.)*(pop->fitness[ind]));
-    // TODO: inf and NaN check on fitness values
+    if(!gsl_finite (pop->fitness[ind]))
+        pop->fitness[ind] = 0.;
+    return pop->fitness[ind];
+    gsl_vector_free(theta_dist);
+    gsl_vector_free(theta_dist_t);
 }
 
 void population_fitness (Population * pop)
 {
-    int k;
+    int ind;
+    double total_fitness = 0.;
     gsl_matrix * omega_cholesky = gsl_matrix_alloc (pop->p, pop->p);
     gsl_matrix_memcpy (omega_cholesky, pop->omega);
     gsl_linalg_cholesky_decomp (omega_cholesky);
-    for (k = 0; k < pop->n_e; k++) {
-        fitness_ind (pop, k, omega_cholesky);
+    for (ind = 0; ind < pop->n_e; ind++) {
+        total_fitness += fitness_ind (pop, ind, omega_cholesky);
     }
+    if (total_fitness == 0.)
+        for (ind = 0; ind < pop->n_e; ind++)
+            pop->fitness[ind] = 1.;  /*TODO: conferir essa parada...*/
+    gsl_matrix_free(omega_cholesky);
 }
 
 void choose_mates (const gsl_rng *r, Population * pop, int * mates)
