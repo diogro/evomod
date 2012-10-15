@@ -1,10 +1,9 @@
-#include <stdio.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_statistics_double.h>
 #include <gsl/gsl_randist.h>
-#include "pop.h"
+#include "io.h"
 
 void covariance_calc (gsl_vector ** data, const int n_e, const int p, gsl_matrix * cov, gsl_matrix * corr)
 {
