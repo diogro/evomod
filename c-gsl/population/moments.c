@@ -62,3 +62,22 @@ void population_phenotype (const gsl_rng * r, Population * pop)
     }
     population_moments (pop);
 }
+
+void population_print_moments (Population *pop, FILE *stream)
+{
+    fprintf(stream, "Geracao %d\ntheta = \n", pop->current_gen);
+    gsl_vector_fprintf(stream, pop->theta, "%f");
+    fprintf(stream, "\nz = \n");
+    gsl_vector_fprintf (stream, pop->mean_z, "%f");
+    fprintf(stream, "\nx = \n");
+    gsl_vector_fprintf (stream, pop->mean_x, "%f");
+    fprintf(stream, "\nP = \n");
+    gsl_matrix_fprintf (stream, pop->p_matrix, "%f");
+    fprintf(stream, "\nG = \n");
+    gsl_matrix_fprintf (stream, pop->g_matrix, "%f");
+    fprintf(stream, "\nB = \n");
+    gsl_matrix_fprintf (stream, pop->mean_b, "%f");
+    fprintf(stream, "\ny = \n");
+    gsl_vector_fprintf (stream, pop->mean_y, "%f");
+    fprintf(stream, "\n---------------------\n");
+}
