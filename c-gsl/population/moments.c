@@ -63,7 +63,7 @@ void population_phenotype (const gsl_rng * r, Population * pop)
     population_moments (pop);
 }
 
-void population_print_moments (Population *pop, FILE *stream)
+void population_print_moments (const Population *pop, FILE *stream)
 {
     fprintf(stream, "Geracao %d\ntheta = \n", pop->current_gen);
     gsl_vector_fprintf(stream, pop->theta, "%f");
@@ -71,6 +71,10 @@ void population_print_moments (Population *pop, FILE *stream)
     gsl_vector_fprintf (stream, pop->mean_z, "%f");
     fprintf(stream, "\nx = \n");
     gsl_vector_fprintf (stream, pop->mean_x, "%f");
+    fprintf(stream, "\ncorr P = \n");
+    gsl_matrix_fprintf (stream, pop->corr_p, "%f");
+    fprintf(stream, "\ncorr G = \n");
+    gsl_matrix_fprintf (stream, pop->corr_g, "%f");
     fprintf(stream, "\nP = \n");
     gsl_matrix_fprintf (stream, pop->p_matrix, "%f");
     fprintf(stream, "\nG = \n");
@@ -80,4 +84,54 @@ void population_print_moments (Population *pop, FILE *stream)
     fprintf(stream, "\ny = \n");
     gsl_vector_fprintf (stream, pop->mean_y, "%f");
     fprintf(stream, "\n---------------------\n");
+}
+
+void matrix_lower_trig (const gsl_matrix * mat, gsl_vector * lower_trig, int p)
+{
+    int i, j, count = 0;
+    gsl_vector_set_zero(lower_trig);
+    for (i = 1; i < p; i++) {
+        for (j = 0; j < i; j++) {
+            gsl_vector_set (lower_trig, count, gsl_matrix_get(mat, i, j));
+            count++;
+        }
+    }
+}
+
+void population_write_moments (const Population * pop, FILE * phenotype, FILE * g_corr, FILE * p_corr, FILE * g_var, FILE * p_var, FILE * h_var)
+{
+    int i, j;
+    gsl_vector * lower_trig = gsl_vector_alloc ((pop->p*pop->p-pop->p)/2);
+    gsl_vector * heridabilities = gsl_vector_alloc (pop->p);
+    gsl_vector_view diag_p, diag_g;
+
+    fprintf(phenotype, "%d ", pop->current_gen);
+    gsl_vector_fprintf (phenotype, pop->mean_z, "%f");
+    fprintf(phenotype, "\n");
+
+    fprintf(g_corr, "%d ", pop->current_gen);
+    matrix_lower_trig(pop->corr_g, lower_trig, pop->p);
+    gsl_vector_fprintf (g_corr, lower_trig, "%f");
+    fprintf(g_corr, "\n");
+
+    fprintf(p_corr, "%d ", pop->current_gen);
+    matrix_lower_trig(pop->corr_p, lower_trig, pop->p);
+    gsl_vector_fprintf (p_corr, lower_trig, "%f");
+    fprintf(p_corr, "\n");
+
+    fprintf(g_var, "%d ", pop->current_gen);
+    diag_g = gsl_matrix_diagonal (pop->g_matrix);
+    gsl_vector_fprintf (g_var, &diag_g.vector, "%f");
+
+    fprintf(p_var, "%d ", pop->current_gen);
+    diag_p = gsl_matrix_diagonal (pop->p_matrix);
+    gsl_vector_fprintf (p_var, &diag_p.vector, "%f");
+
+    fprintf(h_var, "%d ", pop->current_gen);
+    gsl_vector_memcpy (heridabilities, &diag_g.vector);
+    gsl_vector_div (heridabilities, &diag_p.vector);
+    gsl_vector_fprintf (h_var, heridabilities, "%f");
+
+    gsl_vector_free (lower_trig);
+    gsl_vector_free (heridabilities);
 }
