@@ -26,6 +26,7 @@ void mutate_ind(const gsl_rng *r, Population *pop, const int ind)
 
     mutation_num = gsl_ran_binomial(r, pop->mu_b, pop->m*pop->p);
 
+    // TODO: segfault in b matrix mutation
     if (mutation_num > 0) {
         b_mut_idx = (unsigned int *) malloc(pop->m*pop->p*sizeof(unsigned int));
         b_pos = (unsigned int *) malloc(mutation_num*sizeof(unsigned int));

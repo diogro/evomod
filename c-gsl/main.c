@@ -56,9 +56,9 @@ int main(){
     population_theta_read (pop, theta_file);
     population_omega_read (pop, omega_file);
 
-    for (generation = 0; generation < pop->burn_in + pop->selective; generation++){
-        population_next_generation(r, pop);
-    }
+    /*for (generation = 0; generation < pop->burn_in + pop->selective; generation++){*/
+        /*population_next_generation(r, pop);*/
+    /*}*/
 
     return 0;
 }
