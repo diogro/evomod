@@ -165,7 +165,7 @@ void population_cross (const gsl_rng *r, Population * pop)
     free(new_pop_b);
     free(sires);
     free(dames);
-    population_phenotype(r, pop);
+    population_phenotype (r, pop);
 }
 
 void population_random_init (const gsl_rng *r, Population * pop)
