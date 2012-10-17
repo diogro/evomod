@@ -24,7 +24,7 @@ moments.o :
 	${COMPILER} -c population/moments.c $(LDFLAGS) $(CFLAGS)
 
 clean:
-	rm main.o io.o evolution.o moments.o pop.o
+	rm main.o io.o evolution.o moments.o
 
 cleanall :
 	rm main.o
