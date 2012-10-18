@@ -35,7 +35,7 @@ void mutate_ind(const gsl_rng *r, Population *pop, const int ind)
         }
         gsl_ran_choose(r, b_pos, mutation_num, b_mut_idx, pop->m*pop->p, sizeof(unsigned int));
         for(mut_i = 0; mut_i < mutation_num; mut_i++) {
-           b_rand = gsl_rng_uniform_int(r, 1);
+           b_rand = gsl_rng_uniform_int(r, 2);
            b_y = b_pos[mut_i] % pop->m;
            b_x = (unsigned int)((double)(b_pos[mut_i]) / (double)(pop->m));
            new_b = (unsigned int)(gsl_matrix_get(pop->b[ind], b_x, b_y) + b_rand) % 2;

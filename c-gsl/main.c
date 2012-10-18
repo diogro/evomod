@@ -11,6 +11,8 @@ int main(){
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
     gsl_rng_env_setup();
 
+    /*gsl_set_error_handler_off();*/
+
     FILE * phenotype;
     FILE * p_corr;
     FILE * g_corr;
@@ -46,7 +48,7 @@ int main(){
     v_e = 0.8;
 
     burn_in = 0;
-    selective = 90;
+    selective = 10;
 
     gsl_vector * theta = gsl_vector_alloc (traits);
     gsl_matrix * omega = gsl_matrix_alloc (traits, traits);
