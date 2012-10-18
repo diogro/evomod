@@ -39,7 +39,7 @@ void population_moments (Population *pop)
         gsl_vector_add (pop->mean_y, pop->y[ind]);
         gsl_matrix_add (pop->mean_b, pop->b[ind]);
         gsl_vector_add (pop->mean_x, pop->x[ind]);
-        gsl_vector_add (pop->mean_z, pop->y[ind]);
+        gsl_vector_add (pop->mean_z, pop->z[ind]);
     }
     gsl_vector_scale (pop->mean_y, 1./pop->n_e);
     gsl_matrix_scale (pop->mean_b, 1./pop->n_e);
