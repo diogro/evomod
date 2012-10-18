@@ -77,12 +77,14 @@ void population_fitness (Population * pop)
     gsl_matrix * omega_cholesky = gsl_matrix_alloc (pop->p, pop->p);
     gsl_matrix_memcpy (omega_cholesky, pop->omega);
     gsl_linalg_cholesky_decomp (omega_cholesky);
-    for (ind = 0; ind < pop->n_e; ind++) {
+    for (ind = 0; ind < pop->n_e; ind++){
         total_fitness += fitness_ind (pop, ind, omega_cholesky);
     }
     if (total_fitness < 0.000000001){
-        for (ind = 0; ind < pop->n_e; ind++)
+        for (ind = 0; ind < pop->n_e; ind++){
             pop->fitness[ind] = 1.;  /*TODO: conferir essa parada...*/
+        }
+    }
     gsl_matrix_free(omega_cholesky);
 }
 
