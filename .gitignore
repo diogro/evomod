@@ -5,3 +5,5 @@ py/include
 py/lib
 py/local
 py/share
+test.random.c
+c-gsl/output/

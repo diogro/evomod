@@ -26,6 +26,7 @@ void mutate_ind(const gsl_rng *r, Population *pop, const int ind)
 
     mutation_num = gsl_ran_binomial(r, pop->mu_b, pop->m*pop->p);
 
+    // TODO: segfault in b matrix mutation
     if (mutation_num > 0) {
         b_mut_idx = (unsigned int *) malloc(pop->m*pop->p*sizeof(unsigned int));
         b_pos = (unsigned int *) malloc(mutation_num*sizeof(unsigned int));
@@ -64,9 +65,9 @@ double fitness_ind (Population * pop, const int ind, const gsl_matrix * omega_ch
     pop->fitness[ind] = gsl_sf_exp((-1./2.)*(pop->fitness[ind]));
     if(!gsl_finite (pop->fitness[ind]))
         pop->fitness[ind] = 0.;
-    return pop->fitness[ind];
     gsl_vector_free(theta_dist);
     gsl_vector_free(theta_dist_t);
+    return pop->fitness[ind];
 }
 
 void population_fitness (Population * pop)
@@ -79,7 +80,7 @@ void population_fitness (Population * pop)
     for (ind = 0; ind < pop->n_e; ind++) {
         total_fitness += fitness_ind (pop, ind, omega_cholesky);
     }
-    if (total_fitness == 0.)
+    if (total_fitness < 0.000000001){
         for (ind = 0; ind < pop->n_e; ind++)
             pop->fitness[ind] = 1.;  /*TODO: conferir essa parada...*/
     gsl_matrix_free(omega_cholesky);
@@ -165,7 +166,7 @@ void population_cross (const gsl_rng *r, Population * pop)
     free(new_pop_b);
     free(sires);
     free(dames);
-    population_phenotype(r, pop);
+    population_phenotype (r, pop);
 }
 
 void population_random_init (const gsl_rng *r, Population * pop)
