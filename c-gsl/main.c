@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_rng.h>
 #include "population/evolution.h"
 
 int main(){
 
-    int n_e, traits, m, burn_in, selective, generation;
+    int n_e, traits, m, burn_in, selective, generation, i, j;
     double mu, mu_b, sigma, v_e;
 
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
@@ -36,7 +37,7 @@ int main(){
     omega_file     = fopen("./omega.csv", "r");
     theta_file     = fopen("./theta.csv", "r");
 
-    n_e = 1000;
+    n_e = 5000;
     traits = 10;
     m = 500;
     mu = 0.0005;
@@ -45,20 +46,33 @@ int main(){
     v_e = 0.8;
 
     burn_in = 0;
-    selective = 1000;
+    selective = 90;
 
     gsl_vector * theta = gsl_vector_alloc (traits);
     gsl_matrix * omega = gsl_matrix_alloc (traits, traits);
 
     population_alloc (n_e, traits, m, burn_in, selective, mu, mu_b, sigma, v_e, theta, omega, pop);
     population_random_init (r, pop);
+    population_print_moments (pop, summary);
 
     population_theta_read (pop, theta_file);
     population_omega_read (pop, omega_file);
 
-    /*for (generation = 0; generation < pop->burn_in + pop->selective; generation++){*/
-        /*population_next_generation(r, pop);*/
+    /*for (i = 0; i < 10; i++) {*/
+        /*printf ("%g\n", gsl_vector_get(pop->theta, i));*/
     /*}*/
+    /*for (i = 0; i < 10; i++) {*/
+        /*for (j = 0; j < 10; j++) {*/
+            /*printf ("%g\n", gsl_matrix_get(pop->omega, i, j));*/
+        /*}*/
+    /*}*/
+
+    for (generation = 0; generation < pop->burn_in + pop->selective; generation++){
+    printf("%d\n", generation);
+        population_next_generation(r, pop);
+        population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
+    }
+    population_print_moments (pop, summary);
 
     return 0;
 }
