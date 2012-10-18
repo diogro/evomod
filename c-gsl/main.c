@@ -39,15 +39,15 @@ int main(){
     omega_file     = fopen("./omega.csv", "r");
     theta_file     = fopen("./theta.csv", "r");
 
-    n_e = 5000;
-    traits = 10;
-    m = 500;
-    mu = 0.0005;
-    mu_b = 0.0001;
-    sigma = 0.02;
-    v_e = 0.8;
+    n_e       = 5000;
+    traits    = 10;
+    m         = 500;
+    mu        = 0.0005;
+    mu_b      = 0.0001;
+    sigma     = 0.02;
+    v_e       = 0.8;
 
-    burn_in = 0;
+    burn_in   = 0;
     selective = 10;
 
     gsl_vector * theta = gsl_vector_alloc (traits);
@@ -70,7 +70,7 @@ int main(){
     /*}*/
 
     for (generation = 0; generation < pop->burn_in + pop->selective; generation++){
-    printf("%d\n", generation);
+        printf("%d\n", generation);
         population_next_generation(r, pop);
         population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
     }
