@@ -2,6 +2,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_errno.h>
 #include "pop.h"
 
 void population_alloc (const int n_e, const int p, const int m,
