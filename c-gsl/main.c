@@ -7,6 +7,8 @@ int main(){
 
     int n_e, traits, m, burn_in, selective, generation, i, j;
     double mu, mu_b, sigma, v_e;
+    double *delta_theta;
+
 
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
     gsl_rng_env_setup();
@@ -48,7 +50,20 @@ int main(){
     v_e       = 0.8;
 
     burn_in   = 0;
-    selective = 10;
+    selective = 1000;
+
+    delta_theta = (double *) malloc (traits*sizeof(double));
+
+    delta_theta[0] = 0.1;
+    delta_theta[1] = 0.1;
+    delta_theta[2] = 0.1;
+    delta_theta[3] = 0.1;
+    delta_theta[4] = 0.1;
+    delta_theta[5] = -0.1;
+    delta_theta[6] = -0.1;
+    delta_theta[7] = -0.1;
+    delta_theta[8] = -0.1;
+    delta_theta[9] = -0.1;
 
     gsl_vector * theta = gsl_vector_alloc (traits);
     gsl_matrix * omega = gsl_matrix_alloc (traits, traits);
@@ -72,6 +87,8 @@ int main(){
     for (generation = 0; generation < pop->burn_in + pop->selective; generation++){
         printf("%d\n", generation);
         population_next_generation(r, pop);
+        if (generation > 900)
+            population_theta_change(pop, delta_theta);
         population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
     }
     population_print_moments (pop, summary);
