@@ -190,6 +190,16 @@ void population_random_init (const gsl_rng *r, Population * pop)
     population_phenotype(r, pop);
 }
 
+void population_theta_change (Population * pop, double * delta_theta){
+    int trait;
+    double new_theta_i;
+    for (trait = 0; trait < pop->p; trait++) {
+        new_theta_i = gsl_vector_get(pop->theta, trait);
+        new_theta_i += delta_theta[trait];
+        gsl_vector_set ( pop->theta, trait, new_theta_i);
+    }
+}
+
 void population_next_generation (const gsl_rng *r, Population * pop)
 {
     population_mutate(r, pop);
