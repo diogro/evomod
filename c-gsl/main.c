@@ -50,7 +50,7 @@ int main(){
     v_e       = 0.8;
 
     burn_in   = 0;
-    selective = 1000;
+    selective = 30;
 
     delta_theta = (double *) malloc (traits*sizeof(double));
 

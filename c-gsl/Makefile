@@ -1,4 +1,4 @@
-CFLAGS=-O3 -Wall -I/usr/local/include -DHAVE_INLINE
+CFLAGS=-openmp -O3 -Wall -I/usr/local/include -DHAVE_INLINE
 LDFLAGS=-lgsl -lgslcblas -static
 COMPILER=icc
 
