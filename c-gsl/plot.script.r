@@ -15,8 +15,8 @@ time.series.plot  <-  function(input.file, y.axis, n.traits, selection = T){
     return(time.series)
 }
 n.traits <- 10
-pop.path <- "output/"
-mean.phenotype.plot  <- time.series.plot (paste(pop.path, "phenotype.dat", sep = ''), "mean phenotype", 10, T)
-g.var.plot <- time.series.plot (paste(pop.path, "g.var.dat", sep = ''), "genetic variance", 10, F)
-p.var.plot <- time.series.plot (paste(pop.path, "p.var.dat", sep = ''), "phenotipic variance", 10, F)
-h.var.plot <- time.series.plot (paste(pop.path, "h.var.dat", sep = ''), "heritability", 10, F)
+pop.path <- "output"
+mean.phenotype.plot  <- time.series.plot (paste(pop.path, "phenotype.dat", sep = '/'), "mean phenotype", 10, T)
+g.var.plot <- time.series.plot (paste(pop.path, "g.var.dat", sep = '/'), "genetic variance", 10, F)
+p.var.plot <- time.series.plot (paste(pop.path, "p.var.dat", sep = '/'), "phenotipic variance", 10, F)
+h.var.plot <- time.series.plot (paste(pop.path, "h.var.dat", sep = '/'), "heritability", 10, F)
