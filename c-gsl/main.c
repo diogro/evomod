@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_rng.h>
 #include "population/evolution.h"
@@ -8,7 +10,7 @@ int main(){
     int n_e, traits, m, burn_in, selective, generation, i, j;
     double mu, mu_b, sigma, v_e;
     double *delta_theta;
-
+    int bool_sim_type;
 
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
     gsl_rng_env_setup();
@@ -23,6 +25,10 @@ int main(){
     FILE * h_var;
     FILE * out_population;
     FILE * summary;
+    FILE * parameters_in;
+    FILE * parameters_out;
+
+    FILE * input_pop;
 
     FILE * omega_file;
     FILE * theta_file;
@@ -30,59 +36,112 @@ int main(){
     Population *pop;
     pop = (Population *) malloc (sizeof(Population));
 
-    phenotype      = fopen("./output/phenotype.dat", "w");
-    p_corr         = fopen("./output/p.corr.dat", "w");
-    g_corr         = fopen("./output/g.corr.dat", "w");
-    g_var          = fopen("./output/g.var.dat", "w");
-    p_var          = fopen("./output/p.var.dat", "w");
-    h_var          = fopen("./output/h.var.dat", "w");
-    out_population = fopen("./output/pop.pop", "w");
-    summary        = fopen("./output/pop.summary.dat", "w");
+    char out_folder_name[50];
+    printf ("\nInput output folder name\n");
+    scanf ("%s", out_folder_name);
+    char out_folder_name_path[50];
+    char* first= "./output/";
+    strcpy(out_folder_name_path, first);
+    strcat(out_folder_name_path, out_folder_name);
+    mkdir(out_folder_name_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+    char aux[50];
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/phenotype.dat");
+    phenotype      = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/p.corr.dat");
+    p_corr         = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/g.corr.dat");
+    g_corr         = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/g.var.dat");
+    g_var          = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/p.var.dat");
+    p_var          = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/h.var.dat");
+    h_var          = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/pop.pop");
+    out_population = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/pop.summary.dat");
+    summary        = fopen(aux, "w");
+
+    strcpy(aux, out_folder_name_path);
+    strcat(aux, "/pop.parameters.txt");
+    parameters_out = fopen(aux, "w");
+
     omega_file     = fopen("./omega.csv", "r");
     theta_file     = fopen("./theta.csv", "r");
 
-    n_e       = 5000;
-    traits    = 10;
-    m         = 500;
-    mu        = 0.0005;
-    mu_b      = 0.0001;
-    sigma     = 0.02;
-    v_e       = 0.8;
+    char input_parameters[50];
+    printf ("\nInput parameters file name\n");
+    scanf ("%s", input_parameters);
+    /*char input_parameters[50] = "./parameter.input.txt";*/
 
-    burn_in   = 0;
-    selective = 11000;
+    parameters_in  = fopen(input_parameters, "r");
 
+    fscanf(parameters_in, "%d", &n_e);
+    fscanf(parameters_in, "%d", &traits);
+    fscanf(parameters_in, "%d", &m);
+    fscanf(parameters_in, "%lf", &mu);
+    fscanf(parameters_in, "%lf", &mu_b);
+    fscanf(parameters_in, "%lf", &sigma);
+    fscanf(parameters_in, "%lf", &v_e);
+    fscanf(parameters_in, "%d", &burn_in);
+    fscanf(parameters_in, "%d", &selective);
     delta_theta = (double *) malloc (traits*sizeof(double));
+    for(i = 0; i < traits; i++){
+        fscanf(parameters_in, "%lf", &delta_theta[i]);
+    }
 
-    delta_theta[0] = 0.01;
-    delta_theta[1] = 0.01;
-    delta_theta[2] = 0.01;
-    delta_theta[3] = 0.01;
-    delta_theta[4] = 0.01;
-    delta_theta[5] = -0.01;
-    delta_theta[6] = -0.01;
-    delta_theta[7] = -0.01;
-    delta_theta[8] = -0.01;
-    delta_theta[9] = -0.01;
+    fprintf(parameters_out, "N_e = %d\n", n_e);
+    fprintf(parameters_out, "n.traits = %d\n", traits);
+    fprintf(parameters_out, "n.loci = %d\n", m);
+    fprintf(parameters_out, "mu = %lf\n", mu);
+    fprintf(parameters_out, "mu_B = %lf\n", mu_b);
+    fprintf(parameters_out, "sigma = %lf\n", sigma);
+    fprintf(parameters_out, "v_e = %lf\n", v_e);
+    fprintf(parameters_out, "burn_out = %d\n", burn_in);
+    fprintf(parameters_out, "selective = %d\nDelta theta = ", selective);
+    for(i = 0; i < traits; i++){
+        fprintf(parameters_out, "%.3lf ", delta_theta[i]);
+    }
 
     gsl_vector * theta = gsl_vector_alloc (traits);
     gsl_matrix * omega = gsl_matrix_alloc (traits, traits);
 
     population_alloc (n_e, traits, m, burn_in, selective, mu, mu_b, sigma, v_e, theta, omega, pop);
-    population_random_init (r, pop);
-    population_print_moments (pop, summary);
 
     population_theta_read (pop, theta_file);
     population_omega_read (pop, omega_file);
 
-    /*for (i = 0; i < 10; i++) {*/
-        /*printf ("%g\n", gsl_vector_get(pop->theta, i));*/
-    /*}*/
-    /*for (i = 0; i < 10; i++) {*/
-        /*for (j = 0; j < 10; j++) {*/
-            /*printf ("%g\n", gsl_matrix_get(pop->omega, i, j));*/
-        /*}*/
-    /*}*/
+    printf ("\nType 0 for new population, 1 to read from file\n");
+    scanf ("%d", &bool_sim_type);
+
+    if (!bool_sim_type){
+        population_random_init (r, pop);
+    }
+    else{
+        char input_file_pop[50];
+        printf ("\nInput population file name\n");
+        scanf ("%s" ,input_file_pop);
+        input_pop  = fopen(input_file_pop, "r");
+        population_fscanf (pop, input_pop);
+    }
+
+    population_print_moments (pop, summary);
 
     for (generation = 0; generation < pop->burn_in + pop->selective; generation++){
         printf("%d\n", generation);
@@ -92,6 +151,7 @@ int main(){
         population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
     }
     population_print_moments (pop, summary);
+    population_fprintf (pop, out_population);
 
     return 0;
 }
