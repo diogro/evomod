@@ -37,7 +37,7 @@ int main(){
     pop = (Population *) malloc (sizeof(Population));
 
     char out_folder_name[50];
-    printf ("\nInput output folder name\n");
+    printf ("\nOutput folder name\n");
     scanf ("%s", out_folder_name);
     char out_folder_name_path[50];
     char* first= "./output/";
@@ -82,15 +82,17 @@ int main(){
     strcat(aux, "/pop.parameters.txt");
     parameters_out = fopen(aux, "w");
 
-    omega_file     = fopen("./omega.csv", "r");
-    theta_file     = fopen("./theta.csv", "r");
+    omega_file     = fopen("./input/omega.csv", "r");
+    theta_file     = fopen("./input/theta.csv", "r");
 
     char input_parameters[50];
     printf ("\nInput parameters file name\n");
     scanf ("%s", input_parameters);
+    char input_folder[50]= "./input/";
+    strcat(input_folder, input_parameters);
     /*char input_parameters[50] = "./parameter.input.txt";*/
 
-    parameters_in  = fopen(input_parameters, "r");
+    parameters_in  = fopen(input_folder, "r");
 
     fscanf(parameters_in, "%d", &n_e);
     fscanf(parameters_in, "%d", &traits);
