@@ -148,8 +148,7 @@ int main(){
     for (generation = 0; generation < pop->burn_in + pop->selective; generation++){
         printf("%d\n", generation);
         population_next_generation(r, pop);
-        if (generation > 1000)
-            population_theta_change(pop, delta_theta);
+        population_theta_change(pop, delta_theta);
         population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
     }
     population_print_moments (pop, summary);
