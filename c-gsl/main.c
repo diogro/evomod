@@ -44,6 +44,7 @@ int main(){
     strcpy(out_folder_name_path, first);
     strcat(out_folder_name_path, out_folder_name);
     mkdir(out_folder_name_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    printf ("%s", out_folder_name_path);
 
     char aux[50];
     strcpy(aux, out_folder_name_path);
@@ -90,6 +91,7 @@ int main(){
     scanf ("%s", input_parameters);
     char input_folder[50]= "./input/";
     strcat(input_folder, input_parameters);
+    printf ("%s", input_parameters);
     /*char input_parameters[50] = "./parameter.input.txt";*/
 
     parameters_in  = fopen(input_folder, "r");
@@ -139,6 +141,7 @@ int main(){
         char input_file_pop[50];
         printf ("\nInput population file name\n");
         scanf ("%s" ,input_file_pop);
+        printf ("%s", input_file_pop);
         input_pop  = fopen(input_file_pop, "r");
         population_fscanf (pop, input_pop);
     }
