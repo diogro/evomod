@@ -53,5 +53,3 @@ pop.path <- "output/DivSel-0.02/"
 Div.Sel.200.plots <- plot.pop(pop.path, n.traits)
 pop.path <- "output/CoridorSel-0.02/"
 Corridor.Sel.200.plots <- plot.pop(pop.path, n.traits)
-
- Corridor.Sel.200.plots$p.corr
