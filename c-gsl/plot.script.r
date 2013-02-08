@@ -29,7 +29,7 @@ time.series.plot  <-  function(input.file, y.axis, n.traits, selection = T, corr
         time.series <- ggplot(data.clean, aes(generation, main, group = trait, color = trait)) + layer (geom = "point") + scale_y_continuous(y.axis)
     return(time.series)
 }
-plot.pop  <- function (pop.path, n.traits){
+PlotPop  <- function (pop.path, n.traits){
     mean.phenotype.plot  <- time.series.plot (paste(pop.path, "phenotype.dat", sep = '/'), "mean phenotype", 10, T)
     g.var.plot <- time.series.plot (paste(pop.path, "g.var.dat", sep = '/'), "genetic variance", 10, F)
     p.var.plot <- time.series.plot (paste(pop.path, "p.var.dat", sep = '/'), "phenotypic variance", 10, F)
@@ -46,10 +46,42 @@ plot.pop  <- function (pop.path, n.traits){
           )
     return (plots)
 }
+PlotPng  <-  function(list.plots, file.name){
+    require(ggplot2)
+    require(gridExtra)
+    png(paste("output/images/", file.name, sep = ''), width = 1080, height = 1980)
+    dir.create("output/images")
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(3, 2)))
+    vplayout <- function(x, y)
+        viewport(layout.pos.row = x, layout.pos.col = y)
+    print(list.plots[[1]]$p.corr, vp = vplayout(1, 1))
+    print(list.plots[[2]]$p.corr, vp = vplayout(1, 2))
+    print(list.plots[[3]]$p.corr, vp = vplayout(2, 1))
+    print(list.plots[[4]]$p.corr, vp = vplayout(2, 2))
+    print(list.plots[[5]]$p.corr, vp = vplayout(3, 1))
+    print(list.plots[[6]]$p.corr, vp = vplayout(3, 2))
+    dev.off()
+}
 n.traits <- 10
 pop.path <- "output/burn_in"
-burnin.plots <- plot.pop(pop.path, n.traits)
-pop.path <- "output/DivSel-0.02/"
-Div.Sel.200.plots <- plot.pop(pop.path, n.traits)
-pop.path <- "output/CoridorSel-0.02/"
-Corridor.Sel.200.plots <- plot.pop(pop.path, n.traits)
+burnin.plots <- PlotPop(pop.path, n.traits)
+sel.strengths  <- seq(20, 200, 30)/10000
+div.folders = paste("DivSel-", sel.strengths, sep='')
+div.plots = vector('list', length(sel.strengths))
+for (i in 1:length(sel.strengths)){
+    pop.folder = paste("output/", div.folders[i], sep = '')
+    print(pop.folder)
+    div.plots[[i]]  <- PlotPop(pop.folder, n.traits)
+}
+names(div.plots) = div.folders
+corridor.folders = paste("CoridorSel-", sel.strengths, sep='')
+corridor.plots = vector('list', length(sel.strengths))
+for (i in 1:length(sel.strengths)){
+    pop.folder = paste("output/", corridor.folders[i], sep = '')
+    print(pop.folder)
+    corridor.plots[[i]]  <- PlotPop(pop.folder, n.traits)
+}
+names(corridor.plots) = corridor.folders
+PlotPng  (corridor.plots, "corridor.png")
+PlotPng  (div.plots, "divergent.png")
