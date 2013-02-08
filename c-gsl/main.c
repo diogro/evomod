@@ -11,6 +11,7 @@ int main(){
     double mu, mu_b, sigma, v_e;
     double *delta_theta;
     int bool_sim_type;
+    int bool_print_pop;
 
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
     gsl_rng_env_setup();
@@ -134,6 +135,9 @@ int main(){
     printf ("\nType 0 for new population, 1 to read from file\n");
     scanf ("%d", &bool_sim_type);
 
+    printf ("\nPrint final pop?\n");
+    scanf ("%d", &bool_print_pop);
+
     if (!bool_sim_type){
         population_random_init (r, pop);
     }
@@ -155,7 +159,8 @@ int main(){
         population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
     }
     population_print_moments (pop, summary);
-    population_fprintf (pop, out_population);
+    if (bool_print_pop)
+        population_fprintf (pop, out_population);
 
     return 0;
 }
