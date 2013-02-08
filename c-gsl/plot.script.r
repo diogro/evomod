@@ -7,7 +7,7 @@ time.series.plot  <-  function(input.file, y.axis, n.traits, selection = T, corr
         aux.trait = aux.trait[upper.tri(aux.trait)]
         aux.trait[aux.trait==1] = "within module 1"
         aux.trait[aux.trait==4] = "within module 2"
-        aux.trait[aux.trait<0] = "between module"
+        aux.trait[aux.trait==-2] = "between module"
         n.traits = (n.traits*n.traits-n.traits)/2
     }
     gen.number = data.init[seq(1,length(data.init[,1]),n.traits+1),]
@@ -53,3 +53,5 @@ pop.path <- "output/DivSel-0.02/"
 Div.Sel.200.plots <- plot.pop(pop.path, n.traits)
 pop.path <- "output/CoridorSel-0.02/"
 Corridor.Sel.200.plots <- plot.pop(pop.path, n.traits)
+
+ Corridor.Sel.200.plots$p.corr
