@@ -48,19 +48,23 @@ time.series.plot  <-  function(input.file, y.axis, n.traits, selection = T, corr
 }
 
 PlotPop  <- function (pop.path, n.traits){
-    mean.phenotype.plot  <- time.series.plot (paste(pop.path, "phenotype.dat", sep = '/'), "mean phenotype", 10, T)
-    g.var.plot <- time.series.plot (paste(pop.path, "g.var.dat", sep = '/'), "genetic variance", 10, F)
-    p.var.plot <- time.series.plot (paste(pop.path, "p.var.dat", sep = '/'), "phenotypic variance", 10, F)
-    h.var.plot <- time.series.plot (paste(pop.path, "h.var.dat", sep = '/'), "heritability", 10, F)
-    g.corr.plot <- time.series.plot (paste(pop.path, "g.corr.dat", sep = '/'), "genetic correlations", 10, T, T)
-    p.corr.plot <- time.series.plot (paste(pop.path, "p.corr.dat", sep = '/'), "phenotypic correlations", 10, T, T)
+    mean.phenotype.plot  <- time.series.plot (paste(pop.path, "phenotype.dat", sep = '/'), "mean phenotype", n.traits, T)
+    g.var.plot <- time.series.plot (paste(pop.path, "g.var.dat", sep = '/'), "genetic variance", n.traits, F)
+    p.var.plot <- time.series.plot (paste(pop.path, "p.var.dat", sep = '/'), "phenotypic variance", n.traits, F)
+    h.var.plot <- time.series.plot (paste(pop.path, "h.var.dat", sep = '/'), "heritability", n.traits, F)
+    g.corr.plot <- time.series.plot (paste(pop.path, "g.corr.dat", sep = '/'), "genetic correlations", n.traits, T, T)
+    g.avg.corr.plot <- AVGRatioPlot (paste(pop.path, "g.corr.dat", sep = '/'), "mean genetic correlations", n.traits)
+    p.corr.plot <- time.series.plot (paste(pop.path, "p.corr.dat", sep = '/'), "phenotypic correlations", n.traits, T, T)
+    p.avg.corr.plot <- AVGRatioPlot (paste(pop.path, "p.corr.dat", sep = '/'), "mean phenotypic correlations", n.traits)
     plots = list (
           g.var = g.var.plot,
           p.var = p.var.plot,
           h.var = h.var.plot,
           mean.phenotype = mean.phenotype.plot,
           g.corr = g.corr.plot,
-          p.corr = p.corr.plot
+          p.corr = p.corr.plot,
+          g.avg.corr = g.avg.corr.plot,
+          p.avg.corr = p.avg.corr.plot
           )
     return (plots)
 }
