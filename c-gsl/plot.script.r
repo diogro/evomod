@@ -93,14 +93,21 @@ PlotPng  <-  function(list.plots, file.name){
 AVGRatioPlot <- function(input.file, y.axis, n.traits){
     require(ggplot2)
     data.corr = SetDataFrame(input.file, n.traits, T)
-    data.corr = aggregate(data.corr, by = list(data.corr$generation, data.corr$selection), mean)
-    time.series <- ggplot(data.corr, aes(Group.1, main, group = Group.2, color = Group.2)) + layer (geom = "point") + scale_y_continuous(y.axis)
+    data.avg = data.frame()
+    module.name = unique(data.corr$module)
+    for (i in 1:length(module.name)){
+        aux.data = data.corr[data.corr$module==module.name[i],]
+        aux.data = as.vector(tapply(aux.data$main, aux.data$generation, mean, module = module.name[i]))
+        data.avg = rbind(data.avg, data.frame(generation = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)]), main = aux.data, module = module.name[i]))
+    }
+    time.series <- ggplot(data.avg, aes(generation, main, group = module, color = module)) + layer (geom = "point") + scale_y_continuous(y.axis)
     return(time.series)
 }
 
 n.traits <- 10
 pop.path <- "output/burn_in"
 burnin.plots <- PlotPop(pop.path, n.traits)
+
 sel.strengths  <- seq(20, 200, 30)/10000
 div.folders = paste("DivSel-", sel.strengths, sep='')
 div.plots = vector('list', length(sel.strengths))
