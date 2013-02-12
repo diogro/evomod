@@ -41,7 +41,7 @@ time.series.plot  <-  function(input.file, y.axis, n.traits, selection = T, corr
     if (selection)
         time.series <- ggplot(data.clean, aes(generation, main, group = trait, color = selection)) + layer (geom = "point") + scale_y_continuous(y.axis)
     else if(corr.plot)
-        time.series <- ggplot(data.clean, aes(generation, main, group = trait, color = module)) + layer (geom = "point") + scale_y_continuous(y.axis)
+        time.series <- ggplot(data.clean, aes(generation, main, group = trait, color = module)) + layer (geom = c("point", "line")) + scale_y_continuous(y.axis)
     else
         time.series <- ggplot(data.clean, aes(generation, main, group = trait, color = trait)) + layer (geom = "point") + scale_y_continuous(y.axis)
     return(time.series)
@@ -69,7 +69,40 @@ PlotPop  <- function (pop.path, n.traits){
     return (plots)
 }
 
-PlotPng  <-  function(list.plots, file.name){
+PlotPngManyPops  <-  function(list.plots, file.name){
+    require(ggplot2)
+    require(gridExtra)
+    dir.create("output/images")
+    file.names = names(list.plots[[1]])
+    for (i in 1:length(file.names)){
+        tiff(paste("output/images/", file.name, ".", file.names[i], ".tiff", sep = ''), width = 1080, height = 1980)
+        grid.newpage()
+        pushViewport(viewport(layout = grid.layout(3, 2)))
+        vplayout <- function(x, y)
+            viewport(layout.pos.row = x, layout.pos.col = y)
+        print(list.plots[[1]][[i]], vp = vplayout(1, 1))
+        print(list.plots[[2]][[i]], vp = vplayout(1, 2))
+        print(list.plots[[3]][[i]], vp = vplayout(2, 1))
+        print(list.plots[[4]][[i]], vp = vplayout(2, 2))
+        print(list.plots[[5]][[i]], vp = vplayout(3, 1))
+        print(list.plots[[6]][[i]], vp = vplayout(3, 2))
+        dev.off(dev.cur())
+    }
+}
+
+PlotPngSinglePop <-  function(list.plots, file.name){
+    require(ggplot2)
+    require(gridExtra)
+    dir.create("output/images")
+    file.names = names(list.plots)
+    for (i in 1:length(file.names)){
+        postscript(paste("output/images/", file.name, ".", file.names[i], ".eps", sep = ''), width = 7 , height =  3, horizontal=F )
+        print(list.plots[[i]])
+        dev.off(dev.cur())
+    }
+}
+
+PlotPngManyPops  <-  function(list.plots, file.name){
     require(ggplot2)
     require(gridExtra)
     dir.create("output/images")
@@ -100,7 +133,7 @@ AVGRatioPlot <- function(input.file, y.axis, n.traits){
         aux.data = as.vector(tapply(aux.data$main, aux.data$generation, mean, module = module.name[i]))
         data.avg = rbind(data.avg, data.frame(generation = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)]), main = aux.data, module = module.name[i]))
     }
-    time.series <- ggplot(data.avg, aes(generation, main, group = module, color = module)) + layer (geom = "point") + scale_y_continuous(y.axis)
+    time.series <- ggplot(data.avg, aes(generation, main, group = module, color = module)) + layer (geom = "line") + scale_y_continuous(y.axis)
     return(time.series)
 }
 
@@ -126,5 +159,6 @@ for (i in 1:length(sel.strengths)){
 }
 names(corridor.plots) = corridor.folders
 
-PlotPng  (corridor.plots, "corridor")
-PlotPng  (div.plots, "divergent")
+PlotPngManyPops  (corridor.plots, "corridor")
+PlotPngManyPops  (div.plots, "divergent")
+PlotPngSinglePop (burnin.plots, "burnin")
