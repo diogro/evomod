@@ -150,9 +150,12 @@ int main(){
         population_fscanf (pop, input_pop);
     }
 
+    population_moments (pop);
     population_print_moments (pop, summary);
+    pop->burn_in += pop->current_gen;
+    pop->selective += pop->burn_in;
 
-    for (generation = 0; generation < pop->burn_in + pop->selective; generation++){
+    for (generation = 0; generation < burn_in + selective; generation++){
         printf("%d\n", generation);
         population_next_generation(r, pop);
         population_theta_change(pop, delta_theta);

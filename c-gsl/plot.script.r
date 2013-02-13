@@ -160,7 +160,7 @@ for (i in 1:length(sel.strengths)){
 }
 names(corridor.plots) = corridor.folders
 
-drift.pop.number  <- 1:100
+drift.pop.number  <- 0:1
 drift.folders = paste("Drift-", drift.pop.number, sep='')
 drift.plots = vector('list', length(drift.pop.number))
 for (i in 1:length(drift.pop.number)){
@@ -173,4 +173,4 @@ names(drift.plots) = drift.folders
 PlotPngManyPops  (corridor.plots, "corridor")
 PlotPngManyPops  (div.plots, "divergent")
 PlotPngSinglePop (burnin.plots, "burnin")
-PlotPngSinglePop (drift.plots[[1]], "Drift-1")
+PlotPngSinglePop (drift.plots[1:2], "Drift-1")
