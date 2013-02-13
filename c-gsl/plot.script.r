@@ -96,7 +96,8 @@ PlotPngSinglePop <-  function(list.plots, file.name){
     dir.create("output/images")
     file.names = names(list.plots)
     for (i in 1:length(file.names)){
-        postscript(paste("output/images/", file.name, ".", file.names[i], ".eps", sep = ''), width = 7 , height =  3, horizontal=F )
+        png(paste("output/images/", file.name, ".", file.names[i], ".png", sep = ''), width = 700 , height =  300)
+        #postscript(paste("output/images/", file.name, ".", file.names[i], ".eps", sep = ''), width = 7 , height =  3, horizontal=F )
         print(list.plots[[i]])
         dev.off(dev.cur())
     }
@@ -159,6 +160,17 @@ for (i in 1:length(sel.strengths)){
 }
 names(corridor.plots) = corridor.folders
 
+drift.pop.number  <- 1:100
+drift.folders = paste("Drift-", drift.pop.number, sep='')
+drift.plots = vector('list', length(drift.pop.number))
+for (i in 1:length(drift.pop.number)){
+    pop.folder = paste("output/", drift.folders[i], sep = '')
+    print(pop.folder)
+    drift.plots[[i]]  <- PlotPop(pop.folder, n.traits)
+}
+names(drift.plots) = drift.folders
+
 PlotPngManyPops  (corridor.plots, "corridor")
 PlotPngManyPops  (div.plots, "divergent")
 PlotPngSinglePop (burnin.plots, "burnin")
+PlotPngSinglePop (drift.plots[[1]], "Drift-1")
