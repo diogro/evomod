@@ -69,7 +69,7 @@ PlotPop  <- function (pop.path, n.traits){
     return (plots)
 }
 
-PlotPngManyPops  <-  function(list.plots, file.name){
+PlotTiffManyPops  <-  function(list.plots, file.name){
     require(ggplot2)
     require(gridExtra)
     dir.create("output/images")
