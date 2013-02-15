@@ -12,8 +12,13 @@ int main(){
     double *delta_theta;
     int bool_sim_type;
     int bool_print_pop;
+    double packet_size;
+    long seed;
+
 
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
+    seed = time (NULL) * getpid();
+    gsl_rng_set (r, seed);
     gsl_rng_env_setup();
 
     /*gsl_set_error_handler_off();*/
