@@ -28,7 +28,7 @@ SetDataFrame  <- function(input.file, n.traits, corr.plot){
     else{
         sel.scheme = rep(rep(c("positive", "negative"), each=n.traits/2), generations)
     }
-    module = rep(aux.trait, generations)
+    module = as.character(rep(aux.trait, generations))
     trait.name = as.factor(rep(1:n.traits, generations))
     data.clean = data.frame(raw.trait.means, trait.name, gen.number, sel.scheme, module)
     names(data.clean) = c("main", "trait", "generation", "selection", "module")
@@ -53,9 +53,9 @@ PlotPop  <- function (pop.path, n.traits){
     p.var.plot <- time.series.plot (paste(pop.path, "p.var.dat", sep = '/'), "phenotypic variance", n.traits, F)
     h.var.plot <- time.series.plot (paste(pop.path, "h.var.dat", sep = '/'), "heritability", n.traits, F)
     g.corr.plot <- time.series.plot (paste(pop.path, "g.corr.dat", sep = '/'), "genetic correlations", n.traits, T, T)
-    g.avg.corr.plot <- AVGRatioPlot (paste(pop.path, "g.corr.dat", sep = '/'), "mean genetic correlations", n.traits)
+    g.avg.corr.plot <- AVGCorrPlot (paste(pop.path, "g.corr.dat", sep = '/'), "mean genetic correlations", n.traits)
     p.corr.plot <- time.series.plot (paste(pop.path, "p.corr.dat", sep = '/'), "phenotypic correlations", n.traits, T, T)
-    p.avg.corr.plot <- AVGRatioPlot (paste(pop.path, "p.corr.dat", sep = '/'), "mean phenotypic correlations", n.traits)
+    p.avg.corr.plot <- AVGCorrPlot (paste(pop.path, "p.corr.dat", sep = '/'), "mean phenotypic correlations", n.traits)
     plots = list (
           g.var = g.var.plot,
           p.var = p.var.plot,
@@ -124,7 +124,7 @@ PlotPngManyPops  <-  function(list.plots, file.name){
     }
 }
 
-AVGRatioPlot <- function(input.file, y.axis, n.traits){
+AVGCorrPlot <- function(input.file, y.axis, n.traits){
     require(ggplot2)
     data.corr = SetDataFrame(input.file, n.traits, T)
     data.avg = data.frame()
@@ -136,4 +136,59 @@ AVGRatioPlot <- function(input.file, y.axis, n.traits){
     }
     time.series <- ggplot(data.avg, aes(generation, main, group = module, color = module)) + layer (geom = "line") + scale_y_continuous(y.axis)
     return(time.series)
+}
+
+AVGRatioCalc <- function(input.file, n.traits){
+    data.corr = SetDataFrame(input.file, n.traits, T)
+    data.avg = data.frame()
+    data.corr$module = as.character(data.corr$module)
+    data.corr$module[data.corr$module != "between module"] = "within module"
+    module.name = unique(data.corr$module)
+    for (i in 1:length(module.name)){
+        aux.data = data.corr[data.corr$module==module.name[i],]
+        aux.data = as.vector(tapply(aux.data$main, aux.data$generation, mean, module = module.name[i]))
+        data.avg = rbind(data.avg, data.frame(generation = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)]), main = aux.data, module = module.name[i]))
+    }
+    AVGRatio <- abs(data.avg$main[data.avg$module == "within module"])/abs(data.avg$main[data.avg$module == "between module"])
+    return(AVGRatio)
+}
+
+AVGRatioSinglePlot  <- function(input.file, n.traits){
+    require(ggplot2)
+    y.axis = "AVGRatio"
+    data.corr = SetDataFrame(input.file, n.traits, T)
+    AVGRatio <- AVGRatioCalc(input.file, n.traits)
+    data.avg = data.frame(generation = seq(data.corr$generation[1], data.corr$generation[1]+length(AVGRatio)-1), main = AVGRatio)
+    time.series <- ggplot(data.avg, aes(generation, main)) + layer (geom = "line") + scale_y_continuous(y.axis)
+    return(time.series)
+}
+
+AVGRatioAVGPlot <- function(file.name, pattern = "Drift*", n.traits){
+    require(ggplot2)
+    require(Hmisc)
+    y.axis = "AVGRatio"
+    folders  <- dir("output/", pattern)
+    aux.file = paste("output", folders[1], file.name, sep="/")
+    data.corr = SetDataFrame(aux.file, n.traits, T)
+    generation.vector = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)])
+    n.gen = length(generation.vector)
+    n.pop = length(folders)
+    data.avg = array(dim=c(n.gen*n.pop, 2))
+    for (pop in 1:length(folders)){
+        aux.file = paste("output", folders[pop], file.name, sep="/")
+        AVGRatio <- AVGRatioCalc(aux.file, n.traits)
+        lower = 1+((pop-1)*n.gen)
+        upper = pop*n.gen
+        print(lower)
+        print(upper)
+        data.avg[lower:upper,1] = generation.vector
+        data.avg[lower:upper,2] = AVGRatio
+    }
+    data.avg = as.data.frame(data.avg)
+    df.avg = data.frame(cbind(generation.vector, tapply(data.avg[,2], data.avg[,1], mean), tapply(data.avg[,2], data.avg[,1], sd)))
+    names(df.avg) = c("generation", "AVGRatio", "sd")
+    names(data.avg) = c("generation", "AVGRatio")
+    time.series  <-  ggplot(data.avg, aes(generation, AVGRatio)) + scale_y_continuous(y.axis) +
+    geom_line(color=NA)+geom_smooth()+
+    stat_smooth(geom="ribbon")
 }
