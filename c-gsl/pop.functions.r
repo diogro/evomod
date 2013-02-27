@@ -165,8 +165,7 @@ AVGRatioSinglePlot  <- function(input.file, n.traits){
 
 AVGRatioAVGPlot <- function(file.name, pattern = "Drift*", n.traits){
     require(ggplot2)
-    require(Hmisc)
-    y.axis = "AVGRatio"
+    y.axis = "AVG Ratio"
     folders  <- dir("output/", pattern)
     aux.file = paste("output", folders[1], file.name, sep="/")
     data.corr = SetDataFrame(aux.file, n.traits, T)
@@ -174,7 +173,7 @@ AVGRatioAVGPlot <- function(file.name, pattern = "Drift*", n.traits){
     n.gen = length(generation.vector)
     n.pop = length(folders)
     data.avg = array(dim=c(n.gen*n.pop, 2))
-    for (pop in 1:length(folders)){
+    for (pop in 1:(length(folders))){
         aux.file = paste("output", folders[pop], file.name, sep="/")
         AVGRatio <- AVGRatioCalc(aux.file, n.traits)
         lower = 1+((pop-1)*n.gen)
@@ -185,10 +184,27 @@ AVGRatioAVGPlot <- function(file.name, pattern = "Drift*", n.traits){
         data.avg[lower:upper,2] = AVGRatio
     }
     data.avg = as.data.frame(data.avg)
-    df.avg = data.frame(cbind(generation.vector, tapply(data.avg[,2], data.avg[,1], mean), tapply(data.avg[,2], data.avg[,1], sd)))
-    names(df.avg) = c("generation", "AVGRatio", "sd")
     names(data.avg) = c("generation", "AVGRatio")
-    time.series  <-  ggplot(data.avg, aes(generation, AVGRatio)) + scale_y_continuous(y.axis) +
-    geom_line(color=NA)+geom_smooth()+
-    stat_smooth(geom="ribbon")
+    time.series  <- ggplot(data.avg, aes(generation, AVGRatio)) + scale_y_continuous(y.axis) +
+                    geom_point(alpha=1/500)+geom_smooth() + stat_smooth(geom="ribbon")
+    return(time.series)
 }
+
+CorrOmegaCalc <- function(input.file, n.traits){
+    data.corr = SetDataFrame(input.file, n.traits, T)
+    omega = as.matrix(read.table ("input/omega.csv", header=F, sep=' '))[1:n.traits, 1:n.traits]
+    omega = omega[upper.tri(omega)]
+    corr.omega <- tapply(data.corr$main, data.corr$generation, function(x) cor(x, omega))
+    return(corr.omega)
+}
+
+CorrOmegaSinglePlot  <- function(input.file, n.traits){
+    require(ggplot2)
+    y.axis = "Matrix Correlation with Omega"
+    data.corr = SetDataFrame(input.file, n.traits, T)
+    corr.omega <- CorrOmegaCalc(input.file, n.traits)
+    data.avg = data.frame(generation = seq(data.corr$generation[1], data.corr$generation[1]+length(corr.omega)-1), main = corr.omega)
+    time.series <- ggplot(data.avg, aes(generation, main)) + layer (geom = "line") + scale_y_continuous(y.axis)
+    return(time.series)
+}
+
