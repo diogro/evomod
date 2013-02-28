@@ -3,7 +3,7 @@ n.traits <- 10
 pop.path <- "output/burn_in"
 burnin.plots <- PlotPop(pop.path, n.traits)
 
-sel.strengths  <- seq(20, 200, 30)/10000
+sel.strengths  <- c(seq(1,19)/10000, seq(20, 200, 30)/10000)
 div.folders = paste("DivSel-", sel.strengths, sep='')
 div.plots = vector('list', length(sel.strengths))
 for (i in 1:length(sel.strengths)){
@@ -38,3 +38,7 @@ for (i in 0:150){
     plot.name = paste("drift/drift-", i, sep = '')
     PlotPngSinglePop (drift.plots[[i+1]], plot.name)
 }
+
+
+file.name = "p.corr.dat"
+multi.sel.plot = CorrOmegaMultiPlot (file.name, pattern = "DivSel*", n.traits, sel.strengths)

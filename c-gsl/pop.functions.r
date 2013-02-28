@@ -208,7 +208,7 @@ CorrOmegaSinglePlot  <- function(input.file, n.traits){
     return(time.series)
 }
 
-CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
+CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label = F){
     require(ggplot2)
     y.axis = "Matrix Correlation with Omega"
     folders  <- dir("output/", pattern)
@@ -225,13 +225,20 @@ CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
         upper = pop*n.gen
         print(lower)
         print(upper)
-        label.vector = rep(folders[pop], n.gen)
+        if (Label){label.vector = rep(folders[pop], n.gen)}
+        else {
+            aux.file.name = "pop.parameters.txt"
+            aux.file = paste("output", folders[pop], aux.file.name, sep="/")
+            parameters = scan(aux.file, character())
+            index = which("theta"==parameters)+2
+            label.vector = rep(as.numeric(parameters[index]), n.gen)
+        }
         data.avg[lower:upper,1] = generation.vector
         data.avg[lower:upper,2] = corr.omega
         data.avg[lower:upper,3] = label.vector
     }
     data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
     names(data.avg) = c("generation", "corr.omega", "sel.label")
-    time.series  <- ggplot(data.avg, aes(generation, corr.omega, group = sel.label, color=sel.label)) + layer(geom = "line") + scale_y_continuous(y.axis)
+    time.series  <- ggplot(data.avg, aes(generation, corr.omega, group = sel.label, color=sel.label)) + layer(geom = "smooth") + scale_y_continuous(y.axis)
     return(time.series)
 }
