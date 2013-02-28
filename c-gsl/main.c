@@ -126,7 +126,7 @@ int main(){
     fprintf(parameters_out, "burn_out = %d\n", burn_in);
     fprintf(parameters_out, "selective = %d\nDelta theta = ", selective);
     for(i = 0; i < traits; i++){
-        fprintf(parameters_out, "%.3lf ", delta_theta[i]);
+        fprintf(parameters_out, "%lf ", delta_theta[i]);
     }
 
     gsl_vector * theta = gsl_vector_alloc (traits);
