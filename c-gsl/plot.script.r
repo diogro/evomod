@@ -41,4 +41,4 @@ for (i in 0:150){
 
 
 file.name = "p.corr.dat"
-multi.sel.plot = CorrOmegaMultiPlot (file.name, pattern = "DivSel*", n.traits, sel.strengths)
+multi.sel.plot = CorrOmegaMultiPlot (file.name, pattern = "DivSel*", n.traits, Label=F)
