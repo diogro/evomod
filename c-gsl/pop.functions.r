@@ -238,7 +238,8 @@ CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label =
         data.avg[lower:upper,3] = label.vector
     }
     data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
-    names(data.avg) = c("generation", "corr.omega", "sel.label")
-    time.series  <- ggplot(data.avg, aes(generation, corr.omega, group = sel.label, color=sel.label)) + layer(geom = "smooth") + scale_y_continuous(y.axis)
+    names(data.avg) = c("generation", "corr.omega", "Selection_Strengh")
+    time.series  <- ggplot(data.avg, aes(generation, corr.omega, group = Selection_Strengh, color=Selection_Strengh)) +
+                    layer(geom = "smooth") + scale_y_continuous(y.axis)
     return(time.series)
 }
