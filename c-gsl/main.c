@@ -15,7 +15,6 @@ int main(){
     double packet_size;
     long seed;
 
-
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
     seed = time (NULL) * getpid();
     gsl_rng_set (r, seed);
@@ -56,35 +55,24 @@ int main(){
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/phenotype.dat");
     phenotype      = fopen(aux, "w");
-
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/p.corr.dat");
     p_corr         = fopen(aux, "w");
-
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/g.corr.dat");
     g_corr         = fopen(aux, "w");
-
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/g.var.dat");
     g_var          = fopen(aux, "w");
-
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/p.var.dat");
     p_var          = fopen(aux, "w");
-
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/h.var.dat");
     h_var          = fopen(aux, "w");
-
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/pop.pop");
-    out_population = fopen(aux, "w");
-
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/pop.summary.dat");
     summary        = fopen(aux, "w");
-
     strcpy(aux, out_folder_name_path);
     strcat(aux, "/pop.parameters.txt");
     parameters_out = fopen(aux, "w");
@@ -126,7 +114,7 @@ int main(){
     fprintf(parameters_out, "burn_out = %d\n", burn_in);
     fprintf(parameters_out, "selective = %d\nDelta theta = ", selective);
     for(i = 0; i < traits; i++){
-        fprintf(parameters_out, "%.3lf ", delta_theta[i]);
+        fprintf(parameters_out, "%lf ", delta_theta[i]);
     }
 
     gsl_vector * theta = gsl_vector_alloc (traits);
@@ -142,6 +130,12 @@ int main(){
 
     printf ("\nPrint final pop?\n");
     scanf ("%d", &bool_print_pop);
+
+    if (bool_print_pop) {
+        strcpy(aux, out_folder_name_path);
+        strcat(aux, "/pop.pop");
+        out_population = fopen(aux, "w");
+    }
 
     if (!bool_sim_type){
         population_random_init (r, pop);
