@@ -240,6 +240,6 @@ CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label =
     data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
     names(data.avg) = c("generation", "corr.omega", "Selection_Strengh")
     time.series  <- ggplot(data.avg, aes(generation, corr.omega, group = Selection_Strengh, color=Selection_Strengh)) +
-                    layer(geom = "smooth") + scale_y_continuous(y.axis)
+                    layer(geom = "line") + scale_y_continuous(y.axis)
     return(time.series)
 }
