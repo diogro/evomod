@@ -8,3 +8,5 @@ py/share
 test.random.c
 c-gsl/output/
 c-gsl/input/
+*rdata
+*rhistory
