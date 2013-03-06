@@ -277,3 +277,39 @@ PhenotipeMultiPlot <- function(pattern = "DivSel*", n.traits){
                     layer(geom = "smooth") + scale_y_continuous(y.axis)
     return(time.series)
 }
+
+WithInMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
+    require(ggplot2)
+    y.axis = "Mean Within Module Correlation"
+    folders  <- dir("output/", pattern)
+    aux.file = paste("output", folders[1], file.name, sep="/")
+    data.phenotype = SetDataFrame(aux.file, n.traits, T)
+    n.corrs = n.traits/2
+    n.corrs = (n.corrs*n.corrs-n.corrs)
+    generation.vector = rep(seq(data.phenotype$generation[1], data.phenotype$generation[length(data.phenotype$generation)]), each=n.corrs)
+    n.gen = length(generation.vector)
+    n.pop = length(folders)
+    data.avg = array(dim=c(n.gen*n.pop, 3))
+    for (pop in 1:(length(folders))){
+        aux.file = paste("output", folders[pop], file.name, sep="/")
+        ploted.data = SetDataFrame(aux.file, n.traits, T)
+        ploted.data = ploted.data[ploted.data$module!="between module",1]
+        lower = 1+((pop-1)*n.gen)
+        upper = pop*n.gen
+        print(lower)
+        print(upper)
+        aux.file.name = "pop.parameters.txt"
+        aux.file = paste("output", folders[pop], aux.file.name, sep="/")
+        parameters = scan(aux.file, character())
+        index = which("theta"==parameters)+2
+        label.vector = rep(as.numeric(parameters[index]), n.gen)
+        data.avg[lower:upper,1] = generation.vector
+        data.avg[lower:upper,2] = ploted.data
+        data.avg[lower:upper,3] = label.vector
+    }
+    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
+    names(data.avg) = c("generation", "ploted.data", "Selection_Strengh")
+    time.series  <- ggplot(data.avg, aes(generation, ploted.data, group = Selection_Strengh, color=Selection_Strengh)) +
+                    layer(geom = "smooth") + scale_y_continuous(y.axis)
+    return(time.series)
+}
