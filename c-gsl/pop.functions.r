@@ -284,16 +284,20 @@ WithInMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
     folders  <- dir("output/", pattern)
     aux.file = paste("output", folders[1], file.name, sep="/")
     data.phenotype = SetDataFrame(aux.file, n.traits, T)
-    n.corrs = n.traits/2
+    n.corrs = n.traits
     n.corrs = (n.corrs*n.corrs-n.corrs)
-    generation.vector = rep(seq(data.phenotype$generation[1], data.phenotype$generation[length(data.phenotype$generation)]), each=n.corrs)
+    generation.vector = rep(seq(data.phenotype$generation[1],
+                                data.phenotype$generation[length(data.phenotype$generation)]),
+                            each=n.corrs)
     n.gen = length(generation.vector)
     n.pop = length(folders)
-    data.avg = array(dim=c(n.gen*n.pop, 3))
+    data.avg = array(dim=c(n.gen*n.pop, 4))
     for (pop in 1:(length(folders))){
         aux.file = paste("output", folders[pop], file.name, sep="/")
         ploted.data = SetDataFrame(aux.file, n.traits, T)
-        ploted.data = ploted.data[ploted.data$module!="between module",1]
+        module.label = as.character(ploted.data$module)
+        module.label[module.label!="between module"] = "within module"
+        ploted.data = ploted.data[,1]
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
         print(lower)
@@ -302,14 +306,23 @@ WithInMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
         aux.file = paste("output", folders[pop], aux.file.name, sep="/")
         parameters = scan(aux.file, character())
         index = which("theta"==parameters)+2
-        label.vector = rep(as.numeric(parameters[index]), n.gen)
+        selection.label = rep(as.numeric(parameters[index]), n.gen)
         data.avg[lower:upper,1] = generation.vector
         data.avg[lower:upper,2] = ploted.data
-        data.avg[lower:upper,3] = label.vector
+        data.avg[lower:upper,3] = selection.label
+        data.avg[lower:upper,4] = module.label
     }
-    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
-    names(data.avg) = c("generation", "ploted.data", "Selection_Strengh")
-    time.series  <- ggplot(data.avg, aes(generation, ploted.data, group = Selection_Strengh, color=Selection_Strengh)) +
+    data.avg = data.frame(as.numeric(data.avg[,1]),
+                          as.numeric(data.avg[,2]),
+                          data.avg[,3],
+                          data.avg[,4])
+    names(data.avg) = c("generation", "ploted.data", "Selection_Strengh", "Correlation_Type")
+    data.avg = data.frame(data.avg, module_sel = paste(as.character(data.avg[,3]),
+                                          as.character(data.avg[,4])))
+    time.series  <- ggplot(data.avg,
+                           aes(generation, ploted.data,
+                               group = module_sel,
+                               color = Selection_Strengh)) +
                     layer(geom = "smooth") + scale_y_continuous(y.axis)
     return(time.series)
 }

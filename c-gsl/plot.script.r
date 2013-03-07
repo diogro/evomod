@@ -1,5 +1,7 @@
 source('pop.functions.r')
 n.traits <- 10
+file.name = "p.corr.dat"
+pattern = "DivSel-Short-20"
 pop.path <- "output/burn_in"
 burnin.plots <- PlotPop(pop.path, n.traits)
 
