@@ -318,7 +318,7 @@ WithInMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
                           data.avg[,4])
     names(data.avg) = c("generation", "ploted.data", "Selection_Strengh", "Correlation_Type")
     data.avg = data.frame(data.avg, module_sel = paste(as.character(data.avg[,3]),
-                                          as.character(data.avg[,4])))
+                                                       as.character(data.avg[,4])))
     time.series  <- ggplot(data.avg,
                            aes(generation, ploted.data,
                                group = module_sel,
