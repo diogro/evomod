@@ -3,7 +3,7 @@ n.traits <- 10
 pop.path <- "output/burn_in"
 burnin.plots <- PlotPop(pop.path, n.traits)
 
-sel.strengths  <- c(seq(1,19)/10000, seq(20, 200, 30)/10000)
+sel.strengths  <- seq(1,19)/10000
 div.folders = paste("DivSel-", sel.strengths, sep='')
 div.plots = vector('list', length(sel.strengths))
 for (i in 1:length(sel.strengths)){
@@ -41,4 +41,25 @@ for (i in 0:150){
 
 
 file.name = "p.corr.dat"
-multi.sel.plot = CorrOmegaMultiPlot (file.name, pattern = "DivSel-Rep", n.traits, Label=F)
+p.cor.w.multi.plot.10000 = CorrOmegaMultiPlot (file.name, "DivSel-Rep", n.traits, Label=F)
+p.cor.w.multi.plot.100 = CorrOmegaMultiPlot (file.name, "DivSel-Short-100", n.traits, Label=F)
+p.cor.w.multi.plot.1000 = CorrOmegaMultiPlot (file.name, "DivSel-Short-1000", n.traits, Label=F)
+p.cor.w.multi.plot.20 = CorrOmegaMultiPlot (file.name, "DivSel-Short-20", n.traits, Label=F)
+p.within.multi.plot.10000 = WithInMultiPlot (file.name, "DivSel-Rep", n.traits)
+p.within.multi.plot.100 = WithInMultiPlot (file.name, "DivSel-Short-100", n.traits)
+p.within.multi.plot.1000 = WithInMultiPlot (file.name, "DivSel-Short-1000", n.traits)
+p.within.multi.plot.20 = WithInMultiPlot (file.name, "DivSel-Short-20", n.traits)
+file.name = "g.corr.dat"
+g.cor.w.multi.plot.10000 = CorrOmegaMultiPlot (file.name, "DivSel-Rep", n.traits, Label=F)
+g.cor.w.multi.plot.100 = CorrOmegaMultiPlot (file.name, "DivSel-Short-100", n.traits, Label=F)
+g.cor.w.multi.plot.1000 = CorrOmegaMultiPlot (file.name, "DivSel-Short-1000", n.traits, Label=F)
+g.cor.w.multi.plot.20 = CorrOmegaMultiPlot (file.name, "DivSel-Short-20", n.traits, Label=F)
+g.within.multi.plot.10000 = WithInMultiPlot (file.name, "DivSel-Rep", n.traits)
+g.within.multi.plot.100 = WithInMultiPlot (file.name, "DivSel-Short-100", n.traits)
+g.within.multi.plot.1000 = WithInMultiPlot (file.name, "DivSel-Short-1000", n.traits)
+g.within.multi.plot.20 = WithInMultiPlot (file.name, "DivSel-Short-20", n.traits)
+phen.multi.plot.10000 = PhenotipeMultiPlot("DivSel-Rep", n.traits)
+phen.multi.plot.100 = PhenotipeMultiPlot("DivSel-Short-100", n.traits)
+phen.multi.plot.1000 = PhenotipeMultiPlot("DivSel-Short-1000", n.traits)
+phen.multi.plot.20 = PhenotipeMultiPlot("DivSel-Short-20", n.traits)
+save.image("multiplots.rdata")
