@@ -223,8 +223,7 @@ CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label =
         corr.omega <- CorrOmegaCalc(aux.file, n.traits)
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
-        print(lower)
-        print(upper)
+        print(folders[pop])
         if (Label){label.vector = rep(folders[pop], n.gen)}
         else {
             aux.file.name = "pop.parameters.txt"
@@ -244,7 +243,7 @@ CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label =
     return(time.series)
 }
 
-PhenotipeMultiPlot <- function(pattern = "DivSel*", n.traits){
+PhenotipeMultiPlot <- function(pattern = "DivSel-Short-1000-*", n.traits){
     require(ggplot2)
     file.name = "phenotype.dat"
     y.axis = "Mean phenotype norm"
@@ -252,22 +251,22 @@ PhenotipeMultiPlot <- function(pattern = "DivSel*", n.traits){
     aux.file = paste("output", folders[1], file.name, sep="/")
     data.phenotype = SetDataFrame(aux.file, n.traits, F)
     generation.vector = rep(seq(data.phenotype$generation[1], data.phenotype$generation[length(data.phenotype$generation)]), each=n.traits)
-    n.gen = length(generation.vector)
+    n.gen = length(generation.vector)/n.traits
     n.pop = length(folders)
     data.avg = array(dim=c(n.gen*n.pop, 3))
     for (pop in 1:(length(folders))){
         aux.file = paste("output", folders[pop], file.name, sep="/")
         ploted.data = abs(as.numeric(SetDataFrame(aux.file, n.traits, F)[,1]))
+        ploted.data = tapply(ploted.data, generation.vector, mean)
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
-        print(lower)
-        print(upper)
+        print(folders[pop])
         aux.file.name = "pop.parameters.txt"
         aux.file = paste("output", folders[pop], aux.file.name, sep="/")
         parameters = scan(aux.file, character())
         index = which("theta"==parameters)+2
         label.vector = rep(as.numeric(parameters[index]), n.gen)
-        data.avg[lower:upper,1] = generation.vector
+        data.avg[lower:upper,1] = 1:n.gen + generation.vector[1]
         data.avg[lower:upper,2] = ploted.data
         data.avg[lower:upper,3] = label.vector
     }
@@ -300,8 +299,7 @@ WithInMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
         ploted.data = ploted.data[,1]
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
-        print(lower)
-        print(upper)
+        print(folders[pop])
         aux.file.name = "pop.parameters.txt"
         aux.file = paste("output", folders[pop], aux.file.name, sep="/")
         parameters = scan(aux.file, character())
@@ -317,8 +315,10 @@ WithInMultiPlot <- function(file.name, pattern = "DivSel*", n.traits){
                           data.avg[,3],
                           data.avg[,4])
     names(data.avg) = c("generation", "ploted.data", "Selection_Strengh", "Correlation_Type")
-    data.avg = data.frame(data.avg, module_sel = paste(as.character(data.avg[,3]),
-                                                       as.character(data.avg[,4])))
+    data.avg = aggregate(data.avg$ploted.data, list(data.avg$generation, data.avg$Correlation_Type, data.avg$Selection_Strengh), mean)
+    names(data.avg) = c("generation", "Correlation_Type", "Selection_Strengh", "ploted.data")
+    data.avg = data.frame(data.avg, module_sel = paste(as.character(data.avg[,2]),
+                                                       as.character(data.avg[,3])))
     time.series  <- ggplot(data.avg,
                            aes(generation, ploted.data,
                                group = module_sel,
