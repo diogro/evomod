@@ -73,7 +73,7 @@ phen.multi.plot.10000
 dev.off(dev.cur())
 
 ## Figure 6
-pop.path <- "output/DivSel-Rep-0-0.0039"
+pop.path <- "./output/DivSel-Rep-0-0.0038"
 DivSelExample <- PlotPop(pop.path, n.traits)
 PlotFormat("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/divsel.p.avg.corr.tiff")
 DivSelExample$p.avg.corr
@@ -84,4 +84,12 @@ dev.off(dev.cur())
 p.cor.w.multi.plot.10000 = CorrOmegaMultiPlot (file.name, "DivSel-Rep-", n.traits, Label=F)
 PlotFormat("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/divsel.p.omega.corr.tiff")
 p.cor.w.multi.plot.10000
+dev.off(dev.cur())
+
+## Figure 8
+
+pop.path <- "./output/CoridorSel-0.005/"
+CorridorExample <- PlotPop(pop.path, n.traits)
+PlotFormat("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/corridor.p.avg.corr.tiff")
+Corridor$p.avg.corr
 dev.off(dev.cur())
