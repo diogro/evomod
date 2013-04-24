@@ -1,29 +1,30 @@
+##Creating relevant plot objects
+
+#source('pop.functions.r')
+#n.traits <- 10
+#pop.path <- "output/burn_in"
+#burnin.plots <- PlotPop(pop.path, n.traits)
+#file.name = "p.corr.dat"
+#DriftAVGPlot = AVGRatioAVGPlot(file.name, pattern = "Drift*", n.traits)
+#file.name = "p.corr.dat"
+#StabilizingAVGPlot = AVGRatioAVGPlot(file.name, pattern = "Stabilizing*", n.traits)
+#phen.multi.plot.10000 = PhenotipeMultiPlot("DivSel-Rep-", n.traits)
+#pop.path <- "./output/DivSel-Rep-0-0.0038"
+#DivSelExample <- PlotPop(pop.path, n.traits)
+#p.cor.w.multi.plot.10000 = CorrOmegaMultiPlot (file.name, "DivSel-Rep-", n.traits, Label=F)
+#pop.path <- "./output/CoridorSel-0.005/"
+#CorridorExample <- PlotPop(pop.path, n.traits)
+#save.image("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/article.plots.rdata")
+
 ### Actual Figures
 
-source('pop.functions.r')
+library(ggplot2)
 library(scales)
-n.traits <- 10
-
-##Creating relevant plot objects
-burnin.plots <- PlotPop(pop.path, n.traits)
-file.name = "p.corr.dat"
-DriftAVGPlot = AVGRatioAVGPlot(file.name, pattern = "Drift*", n.traits)
-file.name = "p.corr.dat"
-StabilizingAVGPlot = AVGRatioAVGPlot(file.name, pattern = "Stabilizing*", n.traits)
-phen.multi.plot.10000 = PhenotipeMultiPlot("DivSel-Rep-", n.traits)
-pop.path <- "./output/DivSel-Rep-0-0.0038"
-DivSelExample <- PlotPop(pop.path, n.traits)
-p.cor.w.multi.plot.10000 = CorrOmegaMultiPlot (file.name, "DivSel-Rep-", n.traits, Label=F)
-pop.path <- "./output/CoridorSel-0.005/"
-CorridorExample <- PlotPop(pop.path, n.traits)
-save.image("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/article.plots.rdata")
-
-
 load("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/article.plots.rdata")
 PlotFormat = function(x) tiff(x)
+
 ## figure 1
 
-pop.path <- "output/burn_in"
 PlotFormat("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
 burnin.plots$p.avg.corr + scale_fill_continuous(guide = guide_legend()) + theme_bw() + theme_bw() +
                           theme_bw() + theme(legend.position="bottom") +
