@@ -28,7 +28,7 @@ PlotFormat = function(x) tiff(x)
 PlotFormat("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
 burnin.plots$p.avg.corr + scale_fill_continuous(guide = guide_legend()) + theme_bw() + theme_bw() +
                           theme_bw() + theme(legend.position="bottom") +
-                          guides(colour = guide_legend(nrow = 2))
+                          guides(colour = guide_legend(nrow = 1))
 dev.off(dev.cur())
 
 ## Figure 2
@@ -57,7 +57,7 @@ dev.off(dev.cur())
 PlotFormat("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/divsel.p.avg.corr.tiff")
 DivSelExample$p.avg.corr + scale_fill_continuous(guide = guide_legend()) +
                           theme_bw() + theme(legend.position="bottom") +
-                          guides(colour = guide_legend(nrow = 2))
+                          guides(colour = guide_legend(nrow = 1))
 dev.off(dev.cur())
 
 ## Figure 7
@@ -72,5 +72,5 @@ dev.off(dev.cur())
 PlotFormat("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/corridor.p.avg.corr.tiff")
 CorridorExample$p.avg.corr + scale_fill_continuous(guide = guide_legend()) +
                       theme_bw() + theme(legend.position="bottom") +
-                      guides(colour = guide_legend(nrow = 2))
+                      guides(colour = guide_legend(nrow = 1))
 dev.off(dev.cur())
