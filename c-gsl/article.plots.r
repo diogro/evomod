@@ -23,7 +23,7 @@ library(scales)
 load("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/article.plots.rdata")
 PlotFormat.Small = function(x) ggsave(x, current.plot, width=3.27, height=5)
 PlotFormat.Med = function(x) ggsave(x, current.plot, width=4.86, height=5)
-PlotFormat.Large = function(x) ggsave(x, current.plot, width=6.83, height=5)
+PlotFormat.Large = function(x) ggsave(x, current.plot, width=6.83, height=4)
 
 ## figure 1
 
@@ -48,7 +48,7 @@ PlotFormat.Large("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/stabilizin
 ## Figure 5
 
 current.plot =phen.multi.plot.10000 + scale_fill_continuous(guide = guide_legend()) +
-                          theme_bw() + theme(legend.position="bottom", legend.text = element_text(angle = 90))
+                          theme_bw() + theme(legend.position="bottom", legend.text = element_text(angle = 45))
 PlotFormat.Small("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/meanphenotype-div.tiff")
 
 ## Figure 6
@@ -60,7 +60,7 @@ PlotFormat.Med("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/divsel.p.avg
 ## Figure 7
 
 current.plot =p.cor.w.multi.plot.10000 + scale_fill_continuous(guide = guide_legend()) +
-                          theme_bw() + theme(legend.position="bottom", legend.text = element_text(angle = 90))
+                          theme_bw() + theme(legend.position="bottom", legend.text = element_text(angle = 45))
 PlotFormat.Large("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/divsel.p.omega.corr.tiff")
 
 ## Figure 8
