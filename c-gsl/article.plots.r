@@ -24,6 +24,7 @@ load("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/article.plots.rdata")
 PlotFormat.Small = function(x) ggsave(x, current.plot, width=3.27, height=5)
 PlotFormat.Med = function(x) ggsave(x, current.plot, width=4.86, height=5)
 PlotFormat.Large = function(x) ggsave(x, current.plot, width=6.83, height=4)
+PlotFormat.Large.Short = function(x) ggsave(x, current.plot, width=6.83, height=3)
 
 ## figure 1
 
@@ -34,13 +35,13 @@ PlotFormat.Small("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.a
 
 ## Figure 2
 current.plot =DriftAVGPlot + theme_bw()
-PlotFormat.Large("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/drift.AVG.plot.tiff")
+PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/drift.AVG.plot.tiff")
 
 ## Figure 3
 # Stabilizing
 
 current.plot =StabilizingAVGPlot + theme_bw()
-PlotFormat.Large("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/stabilizing.AVG.plot.tiff")
+PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/stabilizing.AVG.plot.tiff")
 
 ## Figure 4
 # Stabilizing
