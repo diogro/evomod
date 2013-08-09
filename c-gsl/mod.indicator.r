@@ -96,6 +96,9 @@ ReadPattern <- function(pattern = "DivSel-Rep-*", n.traits = 10, sel.type = 'div
     return(main.data)
 }
 
+main.data.div.sel = ReadPattern()
+save(main.data.div.sel, file="./div.sel.Rdata")
+
 
 CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label = F){
     require(ggplot2)
