@@ -9,6 +9,7 @@ test.random.c
 c-gsl/output/
 c-gsl/input/
 *rdata
+*Rdata
 *rhistory
 # Object files
 *.o

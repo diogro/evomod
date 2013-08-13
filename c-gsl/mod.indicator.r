@@ -80,9 +80,16 @@ ReadFolder  <- function(input.folder, n.traits, sel.type){
 }
 
 CalcIsoFlex  <- function(mat.list){
-    betas = rep(c(1, 0), each=dim(mat)[1]/2)
+    betas = rep(c(1, 0), each=dim(mat.list[[1]])[1]/2)
     betas = Normalize(betas)
     out = lapply(mat.list, function(mat) Flexibility(betas, mat))
+    return(unlist(out))
+}
+
+CalcIsoEvol  <- function(mat.list){
+    betas = rep(c(1, 0), each=dim(mat.list[[1]])[1]/2)
+    betas = Normalize(betas)
+    out = lapply(mat.list, function(mat) betas%*%(mat%*%betas)/sum(diag(mat)))
     return(unlist(out))
 }
 
@@ -96,41 +103,60 @@ ReadPattern <- function(pattern = "DivSel-Rep-*", n.traits = 10, sel.type = 'div
     return(main.data)
 }
 
-main.data.div.sel = ReadPattern()
-save(main.data.div.sel, file="./div.sel.Rdata")
+#main.data.div.sel = ReadPattern()
+#save(main.data.div.sel, file="./div.sel.Rdata")
+load("./div.sel.Rdata")
+#main.data.corridor = ReadPattern("Coridor*")
+#save(main.data.corridor, file='corridor.Rdata')
+#main.data.stabilizing = ReadPattern("Stabilizing*")
+#save(main.data.stabilizing, file='stabilizing.Rdata')
 
 
-CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label = F){
+
+FlexIsoMultiPlot <- function(pop.list, n.traits = 10){
     require(ggplot2)
-    y.axis = "Matrix Correlation with Omega"
-    folders  <- dir("output/", pattern)
-    aux.file = paste("output", folders[1], file.name, sep="/")
-    data.corr = SetDataFrame(aux.file, n.traits, T)
-    generation.vector = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)])
+    y.axis = "Directional Flexibility"
+    generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
-    n.pop = length(folders)
+    n.pop = length(pop.list)
     data.avg = array(dim=c(n.gen*n.pop, 3))
-    for (pop in 1:(length(folders))){
-        aux.file = paste("output", folders[pop], file.name, sep="/")
-        corr.omega <- CorrOmegaCalc(aux.file, n.traits)
+    for (pop in 1:n.pop){
+        corr.omega <- CalcIsoFlex(pop.list[[pop]]$p.cov)
+        print(pop)
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
-        print(folders[pop])
-        if (Label){label.vector = rep(folders[pop], n.gen)}
-        else {
-            aux.file.name = "pop.parameters.txt"
-            aux.file = paste("output", folders[pop], aux.file.name, sep="/")
-            parameters = scan(aux.file, character())
-            index = which("theta"==parameters)+2
-            label.vector = rep(as.numeric(parameters[index]), n.gen)
-        }
+        label.vector = rep(as.numeric(pop.list[[pop]]$selection.strengh), n.gen)
         data.avg[lower:upper,1] = generation.vector
         data.avg[lower:upper,2] = corr.omega
         data.avg[lower:upper,3] = label.vector
     }
     data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
-    names(data.avg) = c("generation", "corr.omega", "Selection_Strengh")
-    time.series  <- ggplot(data.avg, aes(generation, corr.omega, group = Selection_Strengh, color=Selection_Strengh)) +
+    names(data.avg) = c("generation", "flexibility", "Selection_Strengh")
+    time.series  <- ggplot(data.avg, aes(generation, flexibility, group = Selection_Strengh, color=Selection_Strengh)) +
+                    layer(geom = "smooth") + scale_y_continuous(y.axis)
+    return(time.series)
+}
+
+EvolIsoMultiPlot <- function(pop.list, n.traits = 10){
+    require(ggplot2)
+    y.axis = "Directional Evolvability"
+    generation.vector = pop.list[[1]]$generation
+    n.gen = length(generation.vector)
+    n.pop = length(pop.list)
+    data.avg = array(dim=c(n.gen*n.pop, 3))
+    for (pop in 1:n.pop){
+        corr.omega <- CalcIsoEvol(pop.list[[pop]]$p.cov)
+        print(pop)
+        lower = 1+((pop-1)*n.gen)
+        upper = pop*n.gen
+        label.vector = rep(as.numeric(pop.list[[pop]]$selection.strengh), n.gen)
+        data.avg[lower:upper,1] = generation.vector
+        data.avg[lower:upper,2] = corr.omega
+        data.avg[lower:upper,3] = label.vector
+    }
+    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
+    names(data.avg) = c("generation", "evolvability", "Selection_Strengh")
+    time.series  <- ggplot(data.avg, aes(generation, evolvability, group = Selection_Strengh, color=Selection_Strengh)) +
                     layer(geom = "smooth") + scale_y_continuous(y.axis)
     return(time.series)
 }
