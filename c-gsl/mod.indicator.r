@@ -65,7 +65,7 @@ ReadFolder  <- function(input.folder, n.traits, sel.type){
     aux.file = paste(input.folder, "pop.parameters.txt", sep="/")
     parameters = scan(aux.file, character())
     index = which("theta"==parameters)+2
-    selection.strengh = as.numeric(parameters[index])
+    selection.strength = as.numeric(parameters[index])
     out.list = list(p.cor = p.cor,
                     g.cor = g.cor,
                     p.var = p.var,
@@ -74,7 +74,7 @@ ReadFolder  <- function(input.folder, n.traits, sel.type){
                     p.cov = p.cov,
                     g.cov = g.cov,
                     selection.type = sel.type,
-                    selection.strengh = selection.strengh,
+                    selection.strength = selection.strength,
                     generation = as.numeric(names(p.var)))
     return(out.list)
 }
@@ -122,8 +122,6 @@ ReadPattern <- function(pattern = "DivSel-Rep-*", n.traits = 10, sel.type = 'div
 #main.data.stabilizing = ReadPattern("Stabilizing*")
 #save(main.data.stabilizing, file='stabilizing.Rdata')
 
-
-
 StatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
     require(ggplot2)
     generation.vector = pop.list[[1]]$generation
@@ -131,25 +129,49 @@ StatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.gen*n.pop, 3))
     for (pop in 1:n.pop){
-        stat <- MapStatFunction(pop.list[[pop]]$p.cov)
+        stat <- MapStatFunction((pop.list[[pop]]$p.cov))
         print(pop)
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
-        label.vector = rep(as.numeric(pop.list[[pop]]$selection.strengh), n.gen)
+        label.vector = rep(as.numeric(pop.list[[pop]]$selection.strength), n.gen)
         data.avg[lower:upper,1] = generation.vector
         data.avg[lower:upper,2] = stat
         data.avg[lower:upper,3] = label.vector
     }
     data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
-    names(data.avg) = c("generation", "stat", "Selection_Strengh")
-    time.series  <- ggplot(data.avg, aes(generation, stat, group = Selection_Strengh, color=Selection_Strengh)) +
+    names(data.avg) = c("generation", "stat", "Selection_Strength")
+    time.series  <- ggplot(data.avg, aes(generation, stat, group = Selection_Strength, color=Selection_Strength)) +
                     layer(geom = "smooth") + scale_y_continuous(y.axis)
+    return(time.series)
+}
+
+LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
+    require(ggplot2)
+    n.gen = length(generation.vector)
+    n.pop = length(pop.list)
+    data.avg = array(dim=c(n.pop, 2))
+    for (pop in 1:n.pop){
+        stat <- MapStatFunction(list(pop.list[[pop]]$p.cov[[n.gen]]))
+        print(pop)
+        lower = pop
+        label.vector = as.numeric(pop.list[[pop]]$selection.strengh)
+        data.avg[pop,1] = stat
+        data.avg[pop,2] = label.vector
+    }
+    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]))
+    names(data.avg) = c("stat", "Selection_Strength")
+    time.series  <- ggplot(data.avg, aes(Selection_Strength, stat, group = Selection_Strength)) +
+                    layer(geom = "boxplot") + scale_y_continuous(y.axis) + scale_x_continuous("Selection Strength")
     return(time.series)
 }
 
 
 #load("./div.sel.Rdata")
 #r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
+evol = LastGenStatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
+auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
 #ggsave("~/r2.tiff")
 #evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol,"Directional Evolvability") + theme_bw()
 #ggsave("~/evol.tiff")
