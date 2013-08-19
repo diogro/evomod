@@ -1,4 +1,4 @@
-source("~/projects/lemusp-r/matrix.func.r")
+source("~/projects/lem-usp-R/matrix.func.r")
 
 ReadMatrices  <- function(input.file, n.traits){
     data.init = read.table(input.file)
@@ -100,6 +100,11 @@ CalcIsoAuto  <- function(mat.list){
     return(unlist(out))
 }
 
+MapCalcR2  <- function(mat.list){
+    r2.list = lapply(mat.list, CalcR2)
+    return(unlist(r2.list))
+}
+
 ReadPattern <- function(pattern = "DivSel-Rep-*", n.traits = 10, sel.type = 'divergent'){
     folders  <- dir("output/", pattern)
     main.data = list()
@@ -191,7 +196,34 @@ AutoIsoMultiPlot <- function(pop.list, n.traits = 10){
     return(time.series)
 }
 
-load("./div.sel.Rdata")
-evol = EvolIsoMultiPlot(main.data.div.sel) + theme_bw()
-ggsave("~/evol.tiff")
+R2MultiPlot <- function(pop.list, n.traits = 10){
+    require(ggplot2)
+    y.axis = "Mean Squared Correlations"
+    generation.vector = pop.list[[1]]$generation
+    n.gen = length(generation.vector)
+    n.pop = length(pop.list)
+    data.avg = array(dim=c(n.gen*n.pop, 3))
+    for (pop in 1:n.pop){
+        corr.omega <- MapCalcR2(pop.list[[pop]]$p.cov)
+        print(pop)
+        lower = 1+((pop-1)*n.gen)
+        upper = pop*n.gen
+        label.vector = rep(as.numeric(pop.list[[pop]]$selection.strengh), n.gen)
+        data.avg[lower:upper,1] = generation.vector
+        data.avg[lower:upper,2] = corr.omega
+        data.avg[lower:upper,3] = label.vector
+    }
+    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
+    names(data.avg) = c("generation", "evolvability", "Selection_Strengh")
+    time.series  <- ggplot(data.avg, aes(generation, evolvability, group = Selection_Strengh, color=Selection_Strengh)) +
+                    layer(geom = "smooth") + scale_y_continuous(y.axis)
+    return(time.series)
+}
+
+#load("./div.sel.Rdata")
+r2 = R2MultiPlot(main.data.div.sel) + theme_bw()
+ggsave("~/r2.tiff")
+#evol = EvolIsoMultiPlot(main.data.div.sel) + theme_bw()
+#ggsave("~/evol.tiff")
+
 
