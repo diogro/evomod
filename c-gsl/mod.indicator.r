@@ -44,7 +44,7 @@ CalcCovar  <- function(corr, vars){
     return(covs)
 }
 
-ReadFolder  <- function(input.folder, n.traits, sel.type){
+ReadFolder  <- function(input.folder, n.traits = 10, sel.type, direct.sel = T){
     input.folder = paste("./output", input.folder, sep="/")
     input.file = paste(input.folder, "p.corr.dat", sep = '/')
     p.cor = ReadMatrices(input.file, n.traits)
@@ -62,10 +62,15 @@ ReadFolder  <- function(input.folder, n.traits, sel.type){
     p.cov = CalcCovar(p.cor, p.var)
     g.cov = CalcCovar(g.cor, g.var)
 
-    aux.file = paste(input.folder, "pop.parameters.txt", sep="/")
-    parameters = scan(aux.file, character())
-    index = which("theta"==parameters)+2
-    selection.strength = as.numeric(parameters[index])
+    if(direct.sel){
+        aux.file = paste(input.folder, "pop.parameters.txt", sep="/")
+        parameters = scan(aux.file, character())
+        index = which("theta"==parameters)+2
+        selection.strength = as.numeric(parameters[index])
+    }
+    else{
+        selection.strength = 0.
+    }
     out.list = list(p.cor = p.cor,
                     g.cor = g.cor,
                     p.var = p.var,
@@ -106,8 +111,8 @@ MapCalcR2  <- function(mat.list){
 }
 
 CalcAVGRatio <- function(mat.list){
-    modularity.hipot = t(rbind(rep(c(1,0), each = n.traits/2), rep(c(0,1), each = n.traits/2)))
     n.traits = dim(mat.list[[1]])[1]
+    modularity.hipot = t(rbind(rep(c(1,0), each = n.traits/2), rep(c(0,1), each = n.traits/2)))
     no.hip <- dim (modularity.hipot) [2]
     m.hip.array <- array (0, c(n.traits, n.traits, no.hip + 1))
     for (N in 1:no.hip){
@@ -132,11 +137,15 @@ CalcCorrOmega <- function(mat.list){
     return(unlist(corr.omega))
 }
 
-ReadPattern <- function(pattern = "DivSel-Rep-*", n.traits = 10, sel.type = 'divergent'){
+ReadPattern <- function(pattern = "DivSel-Rep-*",
+                        n.traits = 10,
+                        sel.type = 'divergent',
+                        direct.sel = T){
     folders  <- dir("output/", pattern)
     main.data = list()
     for (pop in 1:(length(folders))){
-        main.data[[pop]] = ReadFolder(folders[pop], n.traits, sel.type)
+        print(pop)
+        main.data[[pop]] = ReadFolder(folders[pop], n.traits, sel.type, direct.sel)
     }
     names(main.data) = folders
     return(main.data)
@@ -190,13 +199,14 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
 #save(main.data.div.sel, file="./div.sel.Rdata")
 #main.data.corridor = ReadPattern("Coridor")
 #save(main.data.corridor, file='corridor.Rdata')
-#main.data.stabilizing = ReadPattern("Stabilizing")
-#save(main.data.stabilizing, file='stabilizing.Rdata')
+main.data.stabilizing = ReadPattern("Stabilizing", sel.type = "Stabilizing", direct.sel = F)
+save(main.data.stabilizing, file='stabilizing.Rdata')
 
+#load("./div.sel.Rdata")
 
-load("./div.sel.Rdata")
-avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
-avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
+#avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
+#avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
+
 #r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/lg.r2.tiff")
 #flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
@@ -205,7 +215,20 @@ avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_b
 #ggsave("~/lg.evol.tiff")
 #auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
 #ggsave("~/lg.auto.tiff")
-corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-ggsave("~/lg.corr.omega.tiff")
-#evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol,"Directional Evolvability") + theme_bw()
-#ggsave("~/evol.tiff")
+#avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
+#ggsave("~/lg.avgratio.tiff")
+#corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+#ggsave("~/lg.corr.omega.tiff")
+
+#r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+#ggsave("~/ts.r2.tiff")
+#flex = StatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
+#ggsave("~/ts.flex.tiff")
+#evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
+#ggsave("~/ts.evol.tiff")
+#auto = StatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
+#ggsave("~/ts.auto.tiff")
+#avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
+#ggsave("~/ts.avgratio.tiff")
+#corr.omega = StatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+#ggsave("~/ts.corr.omega.tiff")
