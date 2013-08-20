@@ -105,18 +105,22 @@ MapCalcR2  <- function(mat.list){
     return(unlist(r2.list))
 }
 
-AVGRatioCalc <- function(input.file, n.traits){
-    data.corr = SetDataFrame(input.file, n.traits, T)
-    data.avg = data.frame()
-    data.corr$module = as.character(data.corr$module)
-    data.corr$module[data.corr$module != "between module"] = "within module"
-    module.name = unique(data.corr$module)
-    for (i in 1:length(module.name)){
-        aux.data = data.corr[data.corr$module==module.name[i],]
-        aux.data = as.vector(tapply(aux.data$main, aux.data$generation, mean, module = module.name[i]))
-        data.avg = rbind(data.avg, data.frame(generation = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)]), main = aux.data, module = module.name[i]))
+CalcAVGRatio <- function(mat.list){
+    modularity.hipot = t(rbind(rep(c(1,0), each = n.traits/2), rep(c(0,1), each = n.traits/2)))
+    n.traits = dim(mat.list[[1]])[1]
+    no.hip <- dim (modularity.hipot) [2]
+    m.hip.array <- array (0, c(n.traits, n.traits, no.hip + 1))
+    for (N in 1:no.hip){
+        for (L in 1:n.traits){
+            for (M in 1:n.traits){
+                m.hip.array[L,M,N] <- ifelse (modularity.hipot[L,N] & modularity.hipot[M,N], 1, 0)
+            }
+        }
     }
-    AVGRatio <- abs(data.avg$main[data.avg$module == "within module"])/abs(data.avg$main[data.avg$module == "between module"])
+    m.hip.array[,,no.hip+1] <- as.integer (as.logical (apply (m.hip.array, c(1,2), sum)))
+    m.hip.array = m.hip.array[,,3]
+    mask = as.logical(m.hip.array[lower.tri(m.hip.array)])
+    AVGRatio <- unlist(lapply(mat.list, function(x) mean(x[lower.tri(x)][mask])/mean(x[lower.tri(x)][!mask])))
     return(AVGRatio)
 }
 
@@ -182,15 +186,17 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
     return(time.series)
 }
 
-main.data.div.sel = ReadPattern()
-save(main.data.div.sel, file="./div.sel.Rdata")
-main.data.corridor = ReadPattern("Coridor")
-save(main.data.corridor, file='corridor.Rdata')
-main.data.stabilizing = ReadPattern("Stabilizing")
-save(main.data.stabilizing, file='stabilizing.Rdata')
+#main.data.div.sel = ReadPattern()
+#save(main.data.div.sel, file="./div.sel.Rdata")
+#main.data.corridor = ReadPattern("Coridor")
+#save(main.data.corridor, file='corridor.Rdata')
+#main.data.stabilizing = ReadPattern("Stabilizing")
+#save(main.data.stabilizing, file='stabilizing.Rdata')
 
 
-#load("./div.sel.Rdata")
+load("./div.sel.Rdata")
+avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
+avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
 #r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/lg.r2.tiff")
 #flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
