@@ -121,9 +121,10 @@ AVGRatioCalc <- function(input.file, n.traits){
 }
 
 CalcCorrOmega <- function(mat.list){
+    n.traits = dim(mat.list[[1]])[1]
     omega = as.matrix(read.table ("input/omega.csv", header=F, sep=' '))[1:n.traits, 1:n.traits]
     omega = omega[upper.tri(omega)]
-    corr.omega <- mapply(mat.list, function(x) cor(x, omega))
+    corr.omega <- lapply(mat.list, function(x) cor(x[upper.tri(x)], omega))
     return(unlist(corr.omega))
 }
 
@@ -136,13 +137,6 @@ ReadPattern <- function(pattern = "DivSel-Rep-*", n.traits = 10, sel.type = 'div
     names(main.data) = folders
     return(main.data)
 }
-
-#main.data.div.sel = ReadPattern()
-#save(main.data.div.sel, file="./div.sel.Rdata")
-#main.data.corridor = ReadPattern("Coridor*")
-#save(main.data.corridor, file='corridor.Rdata')
-#main.data.stabilizing = ReadPattern("Stabilizing*")
-#save(main.data.stabilizing, file='stabilizing.Rdata')
 
 StatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
     require(ggplot2)
@@ -177,7 +171,7 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
         stat <- MapStatFunction(list(pop.list[[pop]]$p.cov[[n.gen]]))
         print(pop)
         lower = pop
-        label.vector = as.numeric(pop.list[[pop]]$selection.strengh)
+        label.vector = as.numeric(pop.list[[pop]]$selection.strength)
         data.avg[pop,1] = stat
         data.avg[pop,2] = label.vector
     }
@@ -188,9 +182,14 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
     return(time.series)
 }
 
-f
-load("./div.sel.Rdata")
-corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+main.data.div.sel = ReadPattern("DivSel-Rep-[0,1,2,3]-")
+save(main.data.div.sel, file="./div.sel.Rdata")
+#main.data.corridor = ReadPattern("Coridor*")
+#save(main.data.corridor, file='corridor.Rdata')
+#main.data.stabilizing = ReadPattern("Stabilizing*")
+#save(main.data.stabilizing, file='stabilizing.Rdata')
+
+
 #load("./div.sel.Rdata")
 #r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/lg.r2.tiff")
@@ -200,5 +199,7 @@ corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Sur
 #ggsave("~/lg.evol.tiff")
 #auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
 #ggsave("~/lg.auto.tiff")
+corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+ggsave("~/lg.corr.omega.tiff")
 #evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol,"Directional Evolvability") + theme_bw()
 #ggsave("~/evol.tiff")
