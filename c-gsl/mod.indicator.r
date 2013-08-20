@@ -188,16 +188,17 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
     return(time.series)
 }
 
-
+f
 load("./div.sel.Rdata")
-#r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
-#evol = LastGenStatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
-#auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
 corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/r2.tiff")
+#load("./div.sel.Rdata")
+#r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+#ggsave("~/lg.r2.tiff")
+#flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
+#ggsave("~/lg.flex.tiff")
+#evol = LastGenStatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
+#ggsave("~/lg.evol.tiff")
+#auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
+#ggsave("~/lg.auto.tiff")
 #evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol,"Directional Evolvability") + theme_bw()
 #ggsave("~/evol.tiff")
-
-
