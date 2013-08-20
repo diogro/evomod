@@ -105,6 +105,28 @@ MapCalcR2  <- function(mat.list){
     return(unlist(r2.list))
 }
 
+AVGRatioCalc <- function(input.file, n.traits){
+    data.corr = SetDataFrame(input.file, n.traits, T)
+    data.avg = data.frame()
+    data.corr$module = as.character(data.corr$module)
+    data.corr$module[data.corr$module != "between module"] = "within module"
+    module.name = unique(data.corr$module)
+    for (i in 1:length(module.name)){
+        aux.data = data.corr[data.corr$module==module.name[i],]
+        aux.data = as.vector(tapply(aux.data$main, aux.data$generation, mean, module = module.name[i]))
+        data.avg = rbind(data.avg, data.frame(generation = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)]), main = aux.data, module = module.name[i]))
+    }
+    AVGRatio <- abs(data.avg$main[data.avg$module == "within module"])/abs(data.avg$main[data.avg$module == "between module"])
+    return(AVGRatio)
+}
+
+CalcCorrOmega <- function(mat.list){
+    omega = as.matrix(read.table ("input/omega.csv", header=F, sep=' '))[1:n.traits, 1:n.traits]
+    omega = omega[upper.tri(omega)]
+    corr.omega <- mapply(mat.list, function(x) cor(x, omega))
+    return(unlist(corr.omega))
+}
+
 ReadPattern <- function(pattern = "DivSel-Rep-*", n.traits = 10, sel.type = 'divergent'){
     folders  <- dir("output/", pattern)
     main.data = list()
@@ -147,6 +169,7 @@ StatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
 
 LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
     require(ggplot2)
+    generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.pop, 2))
@@ -166,12 +189,13 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
 }
 
 
-#load("./div.sel.Rdata")
+load("./div.sel.Rdata")
 #r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
-evol = LastGenStatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
-auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
+#r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+#flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
+#evol = LastGenStatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
+#auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
+corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/r2.tiff")
 #evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol,"Directional Evolvability") + theme_bw()
 #ggsave("~/evol.tiff")
