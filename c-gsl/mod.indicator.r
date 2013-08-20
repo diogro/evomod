@@ -182,12 +182,12 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
     return(time.series)
 }
 
-main.data.div.sel = ReadPattern("DivSel-Rep-[0,1,2,3]-")
+main.data.div.sel = ReadPattern()
 save(main.data.div.sel, file="./div.sel.Rdata")
-#main.data.corridor = ReadPattern("Coridor*")
-#save(main.data.corridor, file='corridor.Rdata')
-#main.data.stabilizing = ReadPattern("Stabilizing*")
-#save(main.data.stabilizing, file='stabilizing.Rdata')
+main.data.corridor = ReadPattern("Coridor")
+save(main.data.corridor, file='corridor.Rdata')
+main.data.stabilizing = ReadPattern("Stabilizing")
+save(main.data.stabilizing, file='stabilizing.Rdata')
 
 
 #load("./div.sel.Rdata")
