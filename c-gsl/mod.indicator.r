@@ -195,12 +195,40 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
     return(time.series)
 }
 
+NoSelStatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
+    require(ggplot2)
+    generation.vector = pop.list[[1]]$generation
+    n.gen = length(generation.vector)
+    n.pop = length(pop.list)
+    data.avg = array(dim=c(n.gen*n.pop, 2))
+    for (pop in 1:n.pop){
+        stat <- MapStatFunction((pop.list[[pop]]$p.cov))
+        print(pop)
+        lower = 1+((pop-1)*n.gen)
+        upper = pop*n.gen
+        data.avg[lower:upper,1] = generation.vector
+        data.avg[lower:upper,2] = stat
+    }
+    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]))
+    names(data.avg) = c("generation", "stat")
+    time.series  <- ggplot(data.avg, aes(generation, stat)) +
+                    geom_point(alpha=1/500) +
+                    geom_smooth() +
+                    stat_smooth(geom="ribbon")+
+                    scale_y_continuous(y.axis)  +
+                    scale_x_continuous("Generation")
+    return(time.series)
+}
+
+
 #main.data.div.sel = ReadPattern()
 #save(main.data.div.sel, file="./div.sel.Rdata")
 #main.data.corridor = ReadPattern("Coridor")
 #save(main.data.corridor, file='corridor.Rdata')
-main.data.stabilizing = ReadPattern("Stabilizing", sel.type = "Stabilizing", direct.sel = F)
-save(main.data.stabilizing, file='stabilizing.Rdata')
+#main.data.stabilizing = ReadPattern("Stabilizing", sel.type = "Stabilizing", direct.sel = F)
+#save(main.data.stabilizing, file='stabilizing.Rdata')
+#main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
+#save(main.data.drift, file='drift.Rdata')
 
 #load("./div.sel.Rdata")
 
@@ -232,3 +260,31 @@ save(main.data.stabilizing, file='stabilizing.Rdata')
 #ggsave("~/ts.avgratio.tiff")
 #corr.omega = StatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/ts.corr.omega.tiff")
+
+#load("./stabilizing.Rdata")
+stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+ggsave("~/tiffs/ts.stab.corr.omega.tiff")
+stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+ggsave("~/tiffs/ts.stab.r2.tiff")
+stab.flex = NoSelStatMultiPlot(main.data.stabilizing, CalcIsoFlex, "Directional Flexibility") + theme_bw()
+ggsave("~/tiffs/ts.stab.flex.tiff")
+stab.evol = NoSelStatMultiPlot(main.data.stabilizing, CalcIsoEvol, "Directional Evolvability") + theme_bw()
+ggsave("~/tiffs/ts.stab.evol.tiff")
+stab.auto = NoSelStatMultiPlot(main.data.stabilizing, CalcIsoAuto, "Directional Autonomy") + theme_bw()
+ggsave("~/tiffs/ts.stab.auto.tiff")
+stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
+ggsave("~/tiffs/ts.stab.avgratio.tiff")
+
+load("./drift.Rdata")
+drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+ggsave("~/tiffs/ts.drift.corr.omega.tiff")
+drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+ggsave("~/tiffs/ts.drift.r2.tiff")
+drift.flex = NoSelStatMultiPlot(main.data.drift, CalcIsoFlex, "Directional Flexibility") + theme_bw()
+ggsave("~/tiffs/ts.drift.flex.tiff")
+drift.evol = NoSelStatMultiPlot(main.data.drift, CalcIsoEvol, "Directional Evolvability") + theme_bw()
+ggsave("~/tiffs/ts.drift.evol.tiff")
+drift.auto = NoSelStatMultiPlot(main.data.drift, CalcIsoAuto, "Directional Autonomy") + theme_bw()
+ggsave("~/tiffs/ts.drift.auto.tiff")
+drift.avg.ratio = NoSelStatMultiPlot(main.data.drift, CalcAVGRatio, "AVGRatio") + theme_bw()
+ggsave("~/tiffs/ts.drift.avgratio.tiff")
