@@ -99,7 +99,7 @@ CalcMeanStat  <- function(mat.list, Stat, nsk = 1000){
     return(unlist(out))
 }
 
-Evolvability  <- function(betas, cov.cov.matrix) betas%*%(cov.matrix%*%betas)/sum(diag(cov.matrix))
+Evolvability  <- function(betas, cov.matrix) betas%*%(cov.matrix%*%betas)/sum(diag(cov.matrix))
 Autonomy  <- function(betas, cov.matrix) 1/(betas%*%solve(cov.matrix, betas))
 
 MapCalcR2  <- function(mat.list){
@@ -262,9 +262,9 @@ load("./div.sel.Rdata")
 #ggsave("~/lg.r2.tiff")
 flex = LastGenStatMultiPlotWithMean(main.data.div.sel, Flexibility, "Flexibility") + theme_bw()
 ggsave("~/lg.flex.tiff")
-evol = LastGenStatMultiPlot(main.data.div.sel, Evolvability, "Evolvability") + theme_bw()
-ggsave("~/lg.evol.tiff")
-auto = LastGenStatMultiPlot(main.data.div.sel, Autonomy, "Autonomy") + theme_bw()
+#evol = LastGenStatMultiPlot(main.data.div.sel, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Evolvability") + theme_bw()
+#ggsave("~/lg.evol.tiff")
+auto = LastGenStatMultiPlotWithMean(main.data.div.sel, Autonomy, "Autonomy") + theme_bw()
 ggsave("~/lg.auto.tiff")
 #avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/lg.avgratio.tiff")
