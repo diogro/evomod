@@ -84,26 +84,23 @@ ReadFolder  <- function(input.folder, n.traits = 10, sel.type, direct.sel = T){
     return(out.list)
 }
 
-CalcIsoFlex  <- function(mat.list){
+CalcIsoStat  <- function(mat.list, Stat){
     betas = rep(c(1, 0), each=dim(mat.list[[1]])[1]/2)
     betas = Normalize(betas)
-    out = lapply(mat.list, function(mat) Flexibility(betas, mat))
+    out = lapply(mat.list, function(mat) Stat(betas, mat))
     return(unlist(out))
 }
 
-CalcIsoEvol  <- function(mat.list){
-    betas = rep(c(1, 0), each=dim(mat.list[[1]])[1]/2)
-    betas = Normalize(betas)
-    out = lapply(mat.list, function(mat) betas%*%(mat%*%betas)/sum(diag(mat)))
+CalcMeanStat  <- function(mat.list, Stat, nsk = 1000){
+    n.traits = dim(mat.list[[1]])[1]
+    beta.mat <- array (rnorm (n.traits * nsk), c(n.traits, nsk))
+    beta.mat <- apply (beta.mat, 2, Normalize)
+    out = lapply(mat.list, function(mat) { return(mean (apply (beta.mat, 2, Stat, cov.matrix = mat)))})
     return(unlist(out))
 }
 
-CalcIsoAuto  <- function(mat.list){
-    betas = rep(c(1, 0), each=dim(mat.list[[1]])[1]/2)
-    betas = Normalize(betas)
-    out = lapply(mat.list, function(mat) 1/(betas%*%solve(mat, betas)))
-    return(unlist(out))
-}
+Evolvability  <- function(betas, cov.cov.matrix) betas%*%(cov.matrix%*%betas)/sum(diag(cov.matrix))
+Autonomy  <- function(betas, cov.matrix) 1/(betas%*%solve(cov.matrix, betas))
 
 MapCalcR2  <- function(mat.list){
     r2.list = lapply(mat.list, CalcR2)
@@ -195,7 +192,7 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
     return(time.series)
 }
 
-LastGendirect.statMultiPlotWithMean  <- function(pop.list, MapStatFunction, MeanMapStatFunction, y.axis, n.traits = 10){
+LastGenStatMultiPlotWithMean  <- function(pop.list, Stat, y.axis, n.traits = 10){
     require(ggplot2)
     require(reshape2)
     generation.vector = pop.list[[1]]$generation
@@ -203,8 +200,8 @@ LastGendirect.statMultiPlotWithMean  <- function(pop.list, MapStatFunction, Mean
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.pop, 3))
     for (pop in 1:n.pop){
-        direct.stat <- MapStatFunction(list(pop.list[[pop]]$p.cov[[n.gen]]))
-        mean.stat <- MeanMapStatFunction(list(pop.list[[pop]]$p.cov[[n.gen]]))
+        direct.stat <- CalcIsoStat(list(pop.list[[pop]]$p.cov[[n.gen]]), Stat)
+        mean.stat <- CalcMeanStat(list(pop.list[[pop]]$p.cov[[n.gen]]), Stat)
         print(pop)
         lower = pop
         label.vector = as.numeric(pop.list[[pop]]$selection.strength)
@@ -215,20 +212,20 @@ LastGendirect.statMultiPlotWithMean  <- function(pop.list, MapStatFunction, Mean
     data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), as.numeric(data.avg[,3]))
     names(data.avg) = c("Directional", "Mean", "Selection_Strength")
     data.avg = melt(data.avg, c("Selection_Strength"))
-    time.series  <- ggplot(data.avg, aes(Selection_Strength, value, group = Selection_Strength, color = variable)) +
+    time.series  <- ggplot(data.avg, aes(Selection_Strength, value, group=interaction(Selection_Strength, variable),color=variable)) +
                     layer(geom = "boxplot") + scale_y_continuous(y.axis) + scale_x_continuous("Selection Strength")
     return(time.series)
 }
 
 
-NoSelStatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
+NoSelStatMultiPlot <- function(pop.list, Stat, y.axis, n.traits = 10){
     require(ggplot2)
     generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.gen*n.pop, 2))
     for (pop in 1:n.pop){
-        stat <- MapStatFunction((pop.list[[pop]]$p.cov))
+        stat <- CalcIsoStat((pop.list[[pop]]$p.cov), Stat)
         print(pop)
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
@@ -263,12 +260,12 @@ load("./div.sel.Rdata")
 
 #r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/lg.r2.tiff")
-#flex = LastGenStatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
-#ggsave("~/lg.flex.tiff")
-#evol = LastGenStatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
-#ggsave("~/lg.evol.tiff")
-#auto = LastGenStatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
-#ggsave("~/lg.auto.tiff")
+flex = LastGenStatMultiPlotWithMean(main.data.div.sel, Flexibility, "Flexibility") + theme_bw()
+ggsave("~/lg.flex.tiff")
+evol = LastGenStatMultiPlot(main.data.div.sel, Evolvability, "Evolvability") + theme_bw()
+ggsave("~/lg.evol.tiff")
+auto = LastGenStatMultiPlot(main.data.div.sel, Autonomy, "Autonomy") + theme_bw()
+ggsave("~/lg.auto.tiff")
 #avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/lg.avgratio.tiff")
 #corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
@@ -287,7 +284,7 @@ load("./div.sel.Rdata")
 #corr.omega = StatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/ts.corr.omega.tiff")
 
-load("./stabilizing.Rdata")
+#load("./stabilizing.Rdata")
 #stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/tiffs/ts.stab.corr.omega.tiff")
 #stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
@@ -301,7 +298,7 @@ load("./stabilizing.Rdata")
 #stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/tiffs/ts.stab.avgratio.tiff")
 
-load("./drift.Rdata")
+#load("./drift.Rdata")
 #drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/tiffs/ts.drift.corr.omega.tiff")
 #drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
