@@ -250,7 +250,7 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
     n.pop.drift = length(drift.list)
     n.pop.stab = length(stab.list)
     data.avg = array(dim=c(n.gen*n.pop.drift*n.pop.stab, 3))
-    for (pop in 1:n.pop){
+    for (pop in 1:n.pop.drift){
         stat <- StatMap((drift.list[[pop]]$p.cov))
         print(pop)
         lower = 1+((pop-1)*n.gen)
@@ -260,18 +260,20 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
         data.avg[lower:upper,2] = stat
         data.avg[lower:upper,3] = label.vector
     }
-    for (pop in (n.pop.drift+1):(n.pop.drift + 1 + n.pop.stab)){
+    for (pop in (n.pop.drift+1):(n.pop.drift + n.pop.stab)){
         stat <- StatMap((stab.list[[pop-n.pop.drift]]$p.cov))
         print(pop)
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
-        label.vector = rep("Drift", n.gen)
+        label.vector = rep("Stabilizing", n.gen)
         data.avg[lower:upper,1] = generation.vector
         data.avg[lower:upper,2] = stat
         data.avg[lower:upper,3] = label.vector
     }
-    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), as.numeric(data.avg[,3]))
-    names(data.avg) = c("generation", "stat", "Selection_scheme")
+    data.avg = data.frame(as.numeric(data.avg[,1]),
+                          as.numeric(data.avg[,2]),
+                          as.character(data.avg[,3]))
+    kames(data.avg) = c("generation", "stat", "Selection_scheme")
     time.series  <- ggplot(data.avg, aes(generation, stat, group=Selection_scheme, color=Selection_scheme)) +
                     geom_point(alpha=1/500) +
                     geom_smooth() +
@@ -349,4 +351,5 @@ load("./drift.Rdata")
 #ggsave("~/tiffs/ts.drift.auto.tiff")
 #drift.avg.ratio = NoSelStatMultiPlot(main.data.drift, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/tiffs/ts.drift.avgratio.tiff")
-NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stab, CalcCorrOmega, "Fitness Surface Correlation")
+drift.stab.corr.omega = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing , CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+ggsave("~/tiffs/ts.drift.stab.corr.omega.tiff")
