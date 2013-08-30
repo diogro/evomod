@@ -245,6 +245,7 @@ NoSelStatMultiPlot <- function(pop.list, Stat, y.axis, n.traits = 10){
 
 NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
+    require("plyr")
     generation.vector = drift.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop.drift = length(drift.list)
@@ -273,15 +274,16 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
     data.avg = data.frame(as.numeric(data.avg[,1]),
                           as.numeric(data.avg[,2]),
                           as.character(data.avg[,3]))
-    kames(data.avg) = c("generation", "stat", "Selection_scheme")
+    names(data.avg) = c("generation", "stat", "Selection_scheme")
     time.series  <- ggplot(data.avg, aes(generation, stat, group=Selection_scheme, color=Selection_scheme)) +
-                    geom_point(alpha=1/500) +
+                    #geom_point(aes(colour=Selection_scheme), size=0.2, alpha=1/5000) +
                     geom_smooth() +
-                    stat_smooth(geom="ribbon")+
+                    stat_smooth(span=0.99)+
                     scale_y_continuous(y.axis)  +
                     scale_x_continuous("Generation")
     return(time.series)
 }
+
 
 
 #main.data.div.sel = ReadPattern()
@@ -351,5 +353,11 @@ load("./drift.Rdata")
 #ggsave("~/tiffs/ts.drift.auto.tiff")
 #drift.avg.ratio = NoSelStatMultiPlot(main.data.drift, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/tiffs/ts.drift.avgratio.tiff")
-drift.stab.corr.omega = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing , CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-ggsave("~/tiffs/ts.drift.stab.corr.omega.tiff")
+
+#drift.stab.corr.omega = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing , CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+drift.list = main.data.drift[1:20]
+stab.list = main.data.stabilizing[1:20]
+StatMap = CalcCorrOmega
+y.axis = "Fitness Surface Correlation"
+#ggsave("~/tiffs/ts.drift.stab.corr.omega.tiff")
+ldply(
