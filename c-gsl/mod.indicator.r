@@ -148,14 +148,14 @@ ReadPattern <- function(pattern = "DivSel-Rep-*",
     return(main.data)
 }
 
-StatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
+StatMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
     generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.gen*n.pop, 3))
     for (pop in 1:n.pop){
-        stat <- MapStatFunction((pop.list[[pop]]$p.cov))
+        stat <- StatMap((pop.list[[pop]]$p.cov))
         print(pop)
         lower = 1+((pop-1)*n.gen)
         upper = pop*n.gen
@@ -171,14 +171,14 @@ StatMultiPlot <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
     return(time.series)
 }
 
-LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 10){
+LastGenStatMultiPlot  <- function(pop.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
     generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.pop, 2))
     for (pop in 1:n.pop){
-        stat <- MapStatFunction(list(pop.list[[pop]]$p.cov[[n.gen]]))
+        stat <- StatMap(list(pop.list[[pop]]$p.cov[[n.gen]]))
         print(pop)
         lower = pop
         label.vector = as.numeric(pop.list[[pop]]$selection.strength)
@@ -192,7 +192,7 @@ LastGenStatMultiPlot  <- function(pop.list, MapStatFunction, y.axis, n.traits = 
     return(time.series)
 }
 
-LastGenStatMultiPlotWithMean  <- function(pop.list, Stat, y.axis, n.traits = 10){
+LastGenStatMapMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
     require(reshape2)
     generation.vector = pop.list[[1]]$generation
@@ -200,8 +200,8 @@ LastGenStatMultiPlotWithMean  <- function(pop.list, Stat, y.axis, n.traits = 10)
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.pop, 3))
     for (pop in 1:n.pop){
-        direct.stat <- CalcIsoStat(list(pop.list[[pop]]$p.cov[[n.gen]]), Stat)
-        mean.stat <- CalcMeanStat(list(pop.list[[pop]]$p.cov[[n.gen]]), Stat)
+        direct.stat <- CalcIsoStatMap(list(pop.list[[pop]]$p.cov[[n.gen]]), StatMap)
+        mean.stat <- CalcMeanStatMap(list(pop.list[[pop]]$p.cov[[n.gen]]), StatMap)
         print(pop)
         lower = pop
         label.vector = as.numeric(pop.list[[pop]]$selection.strength)
@@ -218,26 +218,15 @@ LastGenStatMultiPlotWithMean  <- function(pop.list, Stat, y.axis, n.traits = 10)
 }
 
 
-NoSelStatMultiPlot <- function(pop.list, Stat, y.axis, n.traits = 10){
+NoSelStatMapMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
-    generation.vector = pop.list[[1]]$generation
-    n.gen = length(generation.vector)
-    n.pop = length(pop.list)
-    data.avg = array(dim=c(n.gen*n.pop, 2))
-    for (pop in 1:n.pop){
-        stat <- CalcIsoStat((pop.list[[pop]]$p.cov), Stat)
-        print(pop)
-        lower = 1+((pop-1)*n.gen)
-        upper = pop*n.gen
-        data.avg[lower:upper,1] = generation.vector
-        data.avg[lower:upper,2] = stat
-    }
-    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]))
-    names(data.avg) = c("generation", "stat")
-    time.series  <- ggplot(data.avg, aes(generation, stat)) +
-                    geom_point(alpha=1/500) +
-                    geom_smooth() +
-                    stat_smooth(geom="ribbon")+
+    require(plyr)
+    data.avg <- laply(pop.list, function (x) StatMap(x$p.cov))
+    data.avg <- adply(data.avg, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
+    data.avg[,1] = as.numeric(levels(data.avg[,1]))[data.avg[,1]]
+    names(data.avg) = c("generation", "stat_mean", "stat_lower", "stat_upper")
+    time.series  <- ggplot(data.avg, aes(generation, stat_mean)) +
+                    geom_smooth(aes(ymin = stat_lower, ymax = stat_upper), data=data.avg, stat="identity") +
                     scale_y_continuous(y.axis)  +
                     scale_x_continuous("Generation")
     return(time.series)
@@ -245,40 +234,18 @@ NoSelStatMultiPlot <- function(pop.list, Stat, y.axis, n.traits = 10){
 
 NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
-    require("plyr")
-    generation.vector = drift.list[[1]]$generation
-    n.gen = length(generation.vector)
-    n.pop.drift = length(drift.list)
-    n.pop.stab = length(stab.list)
-    data.avg = array(dim=c(n.gen*n.pop.drift*n.pop.stab, 3))
-    for (pop in 1:n.pop.drift){
-        stat <- StatMap((drift.list[[pop]]$p.cov))
-        print(pop)
-        lower = 1+((pop-1)*n.gen)
-        upper = pop*n.gen
-        label.vector = rep("Drift", n.gen)
-        data.avg[lower:upper,1] = generation.vector
-        data.avg[lower:upper,2] = stat
-        data.avg[lower:upper,3] = label.vector
-    }
-    for (pop in (n.pop.drift+1):(n.pop.drift + n.pop.stab)){
-        stat <- StatMap((stab.list[[pop-n.pop.drift]]$p.cov))
-        print(pop)
-        lower = 1+((pop-1)*n.gen)
-        upper = pop*n.gen
-        label.vector = rep("Stabilizing", n.gen)
-        data.avg[lower:upper,1] = generation.vector
-        data.avg[lower:upper,2] = stat
-        data.avg[lower:upper,3] = label.vector
-    }
-    data.avg = data.frame(as.numeric(data.avg[,1]),
-                          as.numeric(data.avg[,2]),
-                          as.character(data.avg[,3]))
-    names(data.avg) = c("generation", "stat", "Selection_scheme")
-    time.series  <- ggplot(data.avg, aes(generation, stat, group=Selection_scheme, color=Selection_scheme)) +
-                    #geom_point(aes(colour=Selection_scheme), size=0.2, alpha=1/5000) +
-                    geom_smooth() +
-                    stat_smooth(span=0.99)+
+    require(plyr)
+    data.drift <- laply(drift.list, function (x) StatMap(x$p.cov))
+    data.stab <- laply(stab.list, function (x) StatMap(x$p.cov))
+    data.drift <- adply(data.drift, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
+    data.stab <- adply(data.stab, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
+    data.drift[,5] = rep("Drift", length(data.drift))
+    data.stab[,5] = rep("Stabilizing", length(data.stab))
+    data.avg = data.frame(rbind(data.drift, data.stab))
+    data.avg[,1] = as.numeric(levels(data.avg[,1]))[data.avg[,1]]
+    names(data.avg) = c("generation", "stat_mean", "stat_lower", "stat_upper", "Selection_scheme")
+    time.series  <- ggplot(data.avg, aes(generation, stat_mean, color=Selection_scheme)) +
+                    geom_smooth(aes(ymin = stat_lower, ymax = stat_upper, color=Selection_scheme), data=data.avg, stat="identity") +
                     scale_y_continuous(y.axis)  +
                     scale_x_continuous("Generation")
     return(time.series)
@@ -297,8 +264,6 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 
 #load("./div.sel.Rdata")
 
-#avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
-#avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
 
 #r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/lg.r2.tiff")
@@ -327,37 +292,42 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 #ggsave("~/ts.corr.omega.tiff")
 
 load("./stabilizing.Rdata")
-#stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/tiffs/ts.stab.corr.omega.tiff")
-#stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/tiffs/ts.stab.r2.tiff")
-#stab.flex = NoSelStatMultiPlot(main.data.stabilizing, CalcIsoFlex, "Directional Flexibility") + theme_bw()
-#ggsave("~/tiffs/ts.stab.flex.tiff")
-#stab.evol = NoSelStatMultiPlot(main.data.stabilizing, CalcIsoEvol, "Directional Evolvability") + theme_bw()
-#ggsave("~/tiffs/ts.stab.evol.tiff")
-#stab.auto = NoSelStatMultiPlot(main.data.stabilizing, CalcIsoAuto, "Directional Autonomy") + theme_bw()
-#ggsave("~/tiffs/ts.stab.auto.tiff")
-#stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/tiffs/ts.stab.avgratio.tiff")
+stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+ggsave("~/tiffs/ts.stab.corr.omega.tiff")
+stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+ggsave("~/tiffs/ts.stab.r2.tiff")
+stab.flex = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
+ggsave("~/tiffs/ts.stab.flex.tiff")
+stab.evol = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
+ggsave("~/tiffs/ts.stab.evol.tiff")
+stab.auto = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
+ggsave("~/tiffs/ts.stab.auto.tiff")
+stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
+ggsave("~/tiffs/ts.stab.avgratio.tiff")
 
 load("./drift.Rdata")
-#drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/tiffs/ts.drift.corr.omega.tiff")
-#drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/tiffs/ts.drift.r2.tiff")
-#drift.flex = NoSelStatMultiPlot(main.data.drift, CalcIsoFlex, "Directional Flexibility") + theme_bw()
-#ggsave("~/tiffs/ts.drift.flex.tiff")
-#drift.evol = NoSelStatMultiPlot(main.data.drift, CalcIsoEvol, "Directional Evolvability") + theme_bw()
-#ggsave("~/tiffs/ts.drift.evol.tiff")
-#drift.auto = NoSelStatMultiPlot(main.data.drift, CalcIsoAuto, "Directional Autonomy") + theme_bw()
-#ggsave("~/tiffs/ts.drift.auto.tiff")
-#drift.avg.ratio = NoSelStatMultiPlot(main.data.drift, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/tiffs/ts.drift.avgratio.tiff")
+drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+ggsave("~/tiffs/ts.drift.corr.omega.tiff")
+drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+ggsave("~/tiffs/ts.drift.r2.tiff")
+drift.flex = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
+ggsave("~/tiffs/ts.drift.flex.tiff")
+drift.evol = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
+ggsave("~/tiffs/ts.drift.evol.tiff")
+drift.auto = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
+ggsave("~/tiffs/ts.drift.auto.tiff")
+drift.avg.ratio = NoSelStatMultiPlot(main.data.drift, CalcAVGRatio, "AVGRatio") + theme_bw()
+ggsave("~/tiffs/ts.drift.avgratio.tiff")
 
-#drift.stab.corr.omega = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing , CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-drift.list = main.data.drift[1:20]
-stab.list = main.data.stabilizing[1:20]
-StatMap = CalcCorrOmega
-y.axis = "Fitness Surface Correlation"
-#ggsave("~/tiffs/ts.drift.stab.corr.omega.tiff")
-ldply(
+drift.stab.corr.omega = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing , CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+ggsave("~/tiffs/ts.drift.stab.corr.omega.tiff")
+drift.stab.r2 = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
+ggsave("~/tiffs/ts.drift.stab.r2.tiff")
+drift.stab.flex = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
+ggsave("~/tiffs/ts.drift.stab.flex.tiff")
+drift.stab.evol = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
+ggsave("~/tiffs/ts.drift.stab.evol.tiff")
+drift.stab.auto = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
+ggsave("~/tiffs/ts.drift.stab.auto.tiff")
+drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
+ggsave("~/tiffs/ts.drift.stab.avgratio.tiff")
