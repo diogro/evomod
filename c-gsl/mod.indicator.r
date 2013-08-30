@@ -192,7 +192,7 @@ LastGenStatMultiPlot  <- function(pop.list, StatMap, y.axis, n.traits = 10){
     return(time.series)
 }
 
-LastGenStatMapMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits = 10){
+LastGenStatMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
     require(reshape2)
     generation.vector = pop.list[[1]]$generation
@@ -217,8 +217,7 @@ LastGenStatMapMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits
     return(time.series)
 }
 
-
-NoSelStatMapMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
+NoSelStatMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
     require(ggplot2)
     require(plyr)
     data.avg <- laply(pop.list, function (x) StatMap(x$p.cov))
