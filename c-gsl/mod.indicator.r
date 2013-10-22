@@ -108,6 +108,14 @@ MapCalcR2  <- function(mat.list){
     return(unlist(r2.list))
 }
 
+MapEffectiveDimension <- function(mat.list){
+    nd.list <- lapply(mat.list, function(x){
+                      eVals  <-  eigen(x)$values
+                      return(sum(eVals)/eVals[1])
+                    })
+    return(unlist(nd.list))
+}
+
 CalcAVGRatio <- function(mat.list){
     n.traits = dim(mat.list[[1]])[1]
     modularity.hipot = t(rbind(rep(c(1,0), each = n.traits/2), rep(c(0,1), each = n.traits/2)))
@@ -262,9 +270,11 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
 #save(main.data.drift, file='drift.Rdata')
 
-#load("./div.sel.Rdata")
+load("./div.sel.Rdata")
 
 
+nd = LastGenStatMultiPlot(main.data.div.sel, MapEffectiveDimension, "Effective Dimensionality") + theme_bw()
+ggsave("~/lg.nd.tiff")
 #r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/lg.r2.tiff")
 #flex = LastGenStatMultiPlotWithMean(main.data.div.sel, Flexibility, "Flexibility") + theme_bw()
