@@ -1,4 +1,4 @@
-source("~/projects/lem-usp-R/matrix.func.r")
+library(Morphometrics)
 
 ReadMatrices  <- function(input.file, n.traits){
     data.init = read.table(input.file)
@@ -98,10 +98,6 @@ CalcMeanStat  <- function(mat.list, Stat, nsk = 1000){
     out = lapply(mat.list, function(mat) { return(mean (apply (beta.mat, 2, Stat, cov.matrix = mat)))})
     return(unlist(out))
 }
-
-Evolvability  <- function(betas, cov.matrix) betas%*%(cov.matrix%*%betas)/sum(diag(cov.matrix))
-
-Autonomy  <- function(betas, cov.matrix) 1/(betas%*%solve(cov.matrix, betas))
 
 MapCalcR2  <- function(mat.list){
     r2.list = lapply(mat.list, CalcR2)
