@@ -190,59 +190,6 @@ AVGRatioAVGPlot <- function(file.name, pattern = "Drift*", n.traits){
     return(time.series)
 }
 
-CorrOmegaCalc <- function(input.file, n.traits){
-    data.corr = SetDataFrame(input.file, n.traits, T)
-    omega = as.matrix(read.table ("input/omega.csv", header=F, sep=' '))[1:n.traits, 1:n.traits]
-    omega = omega[upper.tri(omega)]
-    corr.omega <- tapply(data.corr$main, data.corr$generation, function(x) cor(x, omega))
-    return(corr.omega)
-}
-
-CorrOmegaSinglePlot  <- function(input.file, n.traits){
-    require(ggplot2)
-    y.axis = "Matrix Correlation with Omega"
-    data.corr = SetDataFrame(input.file, n.traits, T)
-    corr.omega <- CorrOmegaCalc(input.file, n.traits)
-    data.avg = data.frame(generation = seq(data.corr$generation[1], data.corr$generation[1]+length(corr.omega)-1), main = corr.omega)
-    time.series <- ggplot(data.avg, aes(generation, main)) + layer (geom = "line") + scale_y_continuous(y.axis)
-    return(time.series)
-}
-
-CorrOmegaMultiPlot <- function(file.name, pattern = "DivSel*", n.traits, Label = F){
-    require(ggplot2)
-    y.axis = "Matrix Correlation with Omega"
-    folders  <- dir("output/", pattern)
-    aux.file = paste("output", folders[1], file.name, sep="/")
-    data.corr = SetDataFrame(aux.file, n.traits, T)
-    generation.vector = seq(data.corr$generation[1], data.corr$generation[length(data.corr$generation)])
-    n.gen = length(generation.vector)
-    n.pop = length(folders)
-    data.avg = array(dim=c(n.gen*n.pop, 3))
-    for (pop in 1:(length(folders))){
-        aux.file = paste("output", folders[pop], file.name, sep="/")
-        corr.omega <- CorrOmegaCalc(aux.file, n.traits)
-        lower = 1+((pop-1)*n.gen)
-        upper = pop*n.gen
-        print(folders[pop])
-        if (Label){label.vector = rep(folders[pop], n.gen)}
-        else {
-            aux.file.name = "pop.parameters.txt"
-            aux.file = paste("output", folders[pop], aux.file.name, sep="/")
-            parameters = scan(aux.file, character())
-            index = which("theta"==parameters)+2
-            label.vector = rep(as.numeric(parameters[index]), n.gen)
-        }
-        data.avg[lower:upper,1] = generation.vector
-        data.avg[lower:upper,2] = corr.omega
-        data.avg[lower:upper,3] = label.vector
-    }
-    data.avg = data.frame(as.numeric(data.avg[,1]), as.numeric(data.avg[,2]), data.avg[,3])
-    names(data.avg) = c("generation", "corr.omega", "Selection_Strengh")
-    time.series  <- ggplot(data.avg, aes(generation, corr.omega, group = Selection_Strengh, color=Selection_Strengh)) +
-                    layer(geom = "smooth") + scale_y_continuous(y.axis)
-    return(time.series)
-}
-
 PhenotipeMultiPlot <- function(pattern = "DivSel-Short-1000-*", n.traits){
     require(ggplot2)
     file.name = "phenotype.dat"
