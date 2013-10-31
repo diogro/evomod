@@ -112,23 +112,28 @@ MapEffectiveDimension <- function(mat.list){
     return(unlist(nd.list))
 }
 
-CalcAVGRatio <- function(mat.list){
-    n.traits = dim(mat.list[[1]])[1]
-    modularity.hipot = t(rbind(rep(c(1,0), each = n.traits/2), rep(c(0,1), each = n.traits/2)))
-    no.hip <- dim (modularity.hipot) [2]
-    m.hip.array <- array (0, c(n.traits, n.traits, no.hip + 1))
-    for (N in 1:no.hip){
-        for (L in 1:n.traits){
-            for (M in 1:n.traits){
-                m.hip.array[L,M,N] <- ifelse (modularity.hipot[L,N] & modularity.hipot[M,N], 1, 0)
-            }
-        }
+AVGRatio <- function(mat.list, Selection_Strength, num.cores = 1){
+    if (num.cores > 1) {
+        library(doMC)
+        library(foreach)
+        registerDoMC(num.cores)
+        parallel = TRUE
     }
-    m.hip.array[,,no.hip+1] <- as.integer (as.logical (apply (m.hip.array, c(1,2), sum)))
-    m.hip.array = m.hip.array[,,3]
-    mask = as.logical(m.hip.array[lower.tri(m.hip.array)])
-    AVGRatio <- unlist(lapply(mat.list, function(x) mean(x[lower.tri(x)][mask])/mean(x[lower.tri(x)][!mask])))
+    else{
+        parallel = FALSE
+    }
+    n.traits = dim(mat.list[[1]])[1]
+    module.1 = rep(c(1,0), each = n.traits/2)
+    module.2 =  rep(c(0,1), each = n.traits/2)
+    modularity.hipot = cbind(module.1, module.2)
+    AVGRatio <- ldply(mat.list, function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
+    AVGRatio['Selection_Strength'] = Selection_Strength
     return(AVGRatio)
+}
+
+AVGRatioPlot  <- function(pop.list, num.cores = 10){
+    avg.data <- ldply(pop.list, function(x) AVGRatio(x$p.cor, x$selection.strength, num.cores = num.cores), .progress = 'text')
+    return(avg.data)
 }
 
 CalcCorrOmega <- function(mat.list){
@@ -268,9 +273,8 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 
 load("./div.sel.Rdata")
 
-
-nd = LastGenStatMultiPlot(main.data.div.sel, MapEffectiveDimension, "Effective Dimensionality") + theme_bw()
-ggsave("~/lg.nd.tiff")
+#nd = LastGenStatMultiPlot(main.data.div.sel, MapEffectiveDimension, "Effective Dimensionality") + theme_bw()
+#ggsave("~/lg.nd.tiff")
 #r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/lg.r2.tiff")
 #flex = LastGenStatMultiPlotWithMean(main.data.div.sel, Flexibility, "Flexibility") + theme_bw()
