@@ -180,11 +180,7 @@ ReadPattern <- function(pattern = "DivSel-Rep-*",
                         sel.type = 'divergent',
                         direct.sel = T){
     folders  <- dir("output/", pattern)
-    main.data = list()
-    for (pop in 1:(length(folders))){
-        print(pop)
-        main.data[[pop]] = ReadFolder(folders[pop], n.traits, sel.type, direct.sel)
-    }
+    main.data = llply(folders, function(x) ReadFolder(x, n.traits, sel.type, direct.sel), .progress='text')
     names(main.data) = folders
     return(main.data)
 }
@@ -287,12 +283,14 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 
 #main.data.div.sel = ReadPattern()
 #save(main.data.div.sel, file="./div.sel.Rdata")
-main.data.corridor = ReadPattern("Corridor")
-save(main.data.corridor, file='corridor.Rdata')
+#main.data.corridor = ReadPattern("Corridor", sel.type = "corridor")
+#save(main.data.corridor, file='corridor.Rdata')
 #main.data.stabilizing = ReadPattern("Stabilizing", sel.type = "Stabilizing", direct.sel = F)
 #save(main.data.stabilizing, file='stabilizing.Rdata')
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
 #save(main.data.drift, file='drift.Rdata')
+
+load("./corridor.Rdata")
 
 #load("./div.sel.Rdata")
 
