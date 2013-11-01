@@ -114,7 +114,7 @@ MapEffectiveDimension <- function(mat.list){
     return(unlist(nd.list))
 }
 
-AVGRatio <- function(mat.list, Selection_Strength, num.cores = 1){
+AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1){
     if (num.cores > 1) {
         library(doMC)
         library(foreach)
@@ -128,18 +128,23 @@ AVGRatio <- function(mat.list, Selection_Strength, num.cores = 1){
     module.1 = rep(c(1,0), each = n.traits/2)
     module.2 =  rep(c(0,1), each = n.traits/2)
     modularity.hipot = cbind(module.1, module.2)
-    AVGRatio <- ldply(mat.list, function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
+    if(last.gen)
+        AVGRatio <- ldply(mat.list[length(mat.list)], function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
+    else{
+        AVGRatio <- ldply(mat.list, function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
+        AVGRatio['generation'] = rep(1:10000 + 20000, each = 3)
+    }
     AVGRatio['Selection_Strength'] = Selection_Strength
     return(AVGRatio)
 }
 
 AVGRatioPlot  <- function(pop.list, modules = FALSE, num.cores = 2){
     avg <- ldply(pop.list, function(x) AVGRatio(x$p.cor, x$selection.strength, num.cores = num.cores), .progress = 'text')
-    names(avg)[6] = "AVG_Ratio"
+    names(avg)[6] = "Avg_Ratio"
     if(modules){
         m.avg = melt(avg[,-c(2, 3, 6)], id.vars = c('.id', 'Selection_Strength'))
-        m.avg = m.avg[!((m.avg['.id'] != "Full Integration") & (m.avg['variable'] == "AVG-"))]
-        m.avg = m.avg[!((m.avg['.id'] == "Full Integration") & (m.avg['variable'] == "AVG+"))]
+        m.avg = m.avg[!((m.avg['.id'] != "Full Integration") & (m.avg['variable'] == "AVG-")),]
+        m.avg = m.avg[!((m.avg['.id'] == "Full Integration") & (m.avg['variable'] == "AVG+")),]
         avg.plot = ggplot(m.avg, aes(Selection_Strength,
                                      value,
                                      group=interaction(variable, Selection_Strength, .id),
@@ -151,7 +156,6 @@ AVGRatioPlot  <- function(pop.list, modules = FALSE, num.cores = 2){
                             scale_colour_discrete(labels=c("Within Module 1",
                                                            "Within Module 2",
                                                            "Between Modules")) + theme_bw()
-
     }
     else{
         avg.full = avg[avg['.id'] == "Full Integration",-3]
@@ -310,7 +314,7 @@ save(main.data.corridor, file='corridor.Rdata')
 #ggsave("~/lg.evol.tiff")
 #auto = LastGenStatMultiPlotWithMean(main.data.div.sel, Autonomy, "Autonomy") + theme_bw()
 #ggsave("~/lg.auto.tiff")
-#avg.ratio = LastGenStatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
+#avg.ratio = AVGRatioPlot(main.data.div.sel) + theme_bw()
 #ggsave("~/lg.avgratio.tiff")
 #corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/lg.corr.omega.tiff")
