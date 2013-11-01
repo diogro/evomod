@@ -1,4 +1,6 @@
 library(Morphometrics)
+library(ggplot2)
+library(reshape2)
 
 ReadMatrices  <- function(input.file, n.traits){
     data.init = read.table(input.file)
@@ -289,14 +291,14 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 
 #main.data.div.sel = ReadPattern()
 #save(main.data.div.sel, file="./div.sel.Rdata")
-#main.data.corridor = ReadPattern("Coridor")
-#save(main.data.corridor, file='corridor.Rdata')
+main.data.corridor = ReadPattern("Corridor")
+save(main.data.corridor, file='corridor.Rdata')
 #main.data.stabilizing = ReadPattern("Stabilizing", sel.type = "Stabilizing", direct.sel = F)
 #save(main.data.stabilizing, file='stabilizing.Rdata')
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
 #save(main.data.drift, file='drift.Rdata')
 
-load("./div.sel.Rdata")
+#load("./div.sel.Rdata")
 
 #nd = LastGenStatMultiPlot(main.data.div.sel, MapEffectiveDimension, "Effective Dimensionality") + theme_bw()
 #ggsave("~/lg.nd.tiff")
