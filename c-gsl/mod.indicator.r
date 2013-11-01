@@ -190,7 +190,6 @@ ReadPattern <- function(pattern = "DivSel-Rep-*",
 }
 
 StatMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
-    require(ggplot2)
     generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop = length(pop.list)
@@ -213,7 +212,6 @@ StatMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
 }
 
 LastGenStatMultiPlot  <- function(pop.list, StatMap, y.axis, n.traits = 10){
-    require(ggplot2)
     generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop = length(pop.list)
@@ -234,8 +232,6 @@ LastGenStatMultiPlot  <- function(pop.list, StatMap, y.axis, n.traits = 10){
 }
 
 LastGenStatMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits = 10){
-    require(ggplot2)
-    require(reshape2)
     generation.vector = pop.list[[1]]$generation
     n.gen = length(generation.vector)
     n.pop = length(pop.list)
@@ -259,8 +255,6 @@ LastGenStatMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits = 
 }
 
 NoSelStatMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
-    require(ggplot2)
-    require(plyr)
     data.avg <- laply(pop.list, function (x) StatMap(x$p.cov))
     data.avg <- adply(data.avg, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
     data.avg[,1] = as.numeric(levels(data.avg[,1]))[data.avg[,1]]
@@ -273,8 +267,6 @@ NoSelStatMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
 }
 
 NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n.traits = 10){
-    require(ggplot2)
-    require(plyr)
     data.drift <- laply(drift.list, function (x) StatMap(x$p.cov))
     data.stab <- laply(stab.list, function (x) StatMap(x$p.cov))
     data.drift <- adply(data.drift, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
