@@ -1,5 +1,5 @@
 library(Morphometrics)
-library(ggplot2)
+ibrary(ggplot2)
 library(reshape2)
 
 ReadMatrices  <- function(input.file, n.traits){
