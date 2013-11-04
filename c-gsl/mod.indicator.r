@@ -1,5 +1,5 @@
 library(Morphometrics)
-ibrary(ggplot2)
+library(ggplot2)
 library(reshape2)
 
 ReadMatrices  <- function(input.file, n.traits){
@@ -114,7 +114,7 @@ MapEffectiveDimension <- function(mat.list){
     return(unlist(nd.list))
 }
 
-AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1){
+AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1, generations = 1:10000 + 20000){
     if (num.cores > 1) {
         library(doMC)
         library(foreach)
@@ -132,7 +132,7 @@ AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1){
         AVGRatio <- ldply(mat.list[length(mat.list)], function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
     else{
         AVGRatio <- ldply(mat.list, function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
-        AVGRatio['generation'] = rep(1:10000 + 20000, each = 3)
+        AVGRatio['generation'] = rep(generations, each = 3)
     }
     AVGRatio['Selection_Strength'] = Selection_Strength
     return(AVGRatio)
@@ -280,7 +280,6 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 }
 
 
-
 #main.data.div.sel = ReadPattern()
 #save(main.data.div.sel, file="./div.sel.Rdata")
 #main.data.corridor = ReadPattern("Corridor", sel.type = "corridor")
@@ -290,7 +289,7 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
 #save(main.data.drift, file='drift.Rdata')
 
-load("./corridor.Rdata")
+#load("./corridor.Rdata")
 
 #load("./div.sel.Rdata")
 
@@ -362,3 +361,24 @@ load("./corridor.Rdata")
 #ggsave("~/tiffs/ts.drift.stab.auto.tiff")
 #drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/tiffs/ts.drift.stab.avgratio.tiff")
+
+#burn.in.pop = ReadFolder("burn_in", sel.type = "burn.in", direct.sel=F)
+#burn.in.avg = AVGRatio(burn.in.pop$p.cor, 0, F, num.cores = 10, generations = 1:20000)
+#burn.in.avg['generation'] = burn.in.avg['generation']
+#burn.in.avg['Probability'] = NULL
+#burn.in.avg['Selection_Strength'] = NULL
+#m.avg = melt(burn.in.avg[,-c(2,5)], id.vars = c('.id', 'generation'))
+#m.avg = m.avg[!((m.avg['.id'] != "Full Integration") & (m.avg['variable'] == "AVG-")),]
+#m.avg = m.avg[!((m.avg['.id'] == "Full Integration") & (m.avg['variable'] == "AVG+")),]
+#avg.plot = ggplot(m.avg, aes(generation,
+                             #value,
+                             #group=interaction(variable, generation, .id),
+                             #colour=interaction(.id, variable))) +
+#layer(geom="point") +
+#labs(x="Generation",
+     #y="Average Correlation",
+     #color = "Module") +
+#scale_colour_discrete(labels=c("Within Module 1",
+                               #"Within Module 2",
+                               #"Between Modules")) + theme_bw()
+#ggsave("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
