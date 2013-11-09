@@ -8,11 +8,11 @@ ReadMatrices  <- function(input.file, n.traits){
     gen.number = data.init[seq(1,length(data.init[,1]),n.corrs+1),]
     raw.trait.means = data.init[-seq(1,length(data.init[,1]),n.corrs+1),]
     generations = length(gen.number)
-    cor.matrices = list()
+    cor.matrices = vector('list', generations)
+    current.mat = matrix(1, n.traits, n.traits)
     for(gen in 1:generations){
         lower = 1+((gen-1)*n.corrs)
         upper = gen*n.corrs
-        current.mat = matrix(1, n.traits, n.traits)
         current.mat[upper.tri(current.mat)] = raw.trait.means[lower:upper]
         current.mat[lower.tri(current.mat)] = t(current.mat)[lower.tri(current.mat)]
         cor.matrices[[gen]] = current.mat
@@ -26,7 +26,7 @@ ReadVariances  <- function(input.file, n.traits){
     gen.number = data.init[seq(1,length(data.init[,1]),n.traits+1),]
     raw.trait.means = data.init[-seq(1,length(data.init[,1]),n.traits+1),]
     generations = length(gen.number)
-    var.vectors = list()
+    var.vectors = vector('list', generations)
     for(gen in 1:generations){
         lower = 1+((gen-1)*n.traits)
         upper = gen*n.traits
@@ -39,7 +39,7 @@ ReadVariances  <- function(input.file, n.traits){
 
 CalcCovar  <- function(corr, vars){
     num.gens = length(vars)
-    covs = list()
+    covs = vector('list', num.gens)
     for(i in 1:num.gens)
         covs[[i]] = corr[[i]]*outer(vars[[i]], vars[[i]])
     names(covs) = names(vars)
@@ -47,6 +47,7 @@ CalcCovar  <- function(corr, vars){
 }
 
 ReadFolder  <- function(input.folder, n.traits = 10, sel.type, direct.sel = T){
+    print(input.folder)
     input.folder = paste("./output", input.folder, sep="/")
     input.file = paste(input.folder, "p.corr.dat", sep = '/')
     p.cor = ReadMatrices(input.file, n.traits)
@@ -66,7 +67,7 @@ ReadFolder  <- function(input.folder, n.traits = 10, sel.type, direct.sel = T){
 
     if(direct.sel){
         aux.file = paste(input.folder, "pop.parameters.txt", sep="/")
-        parameters = scan(aux.file, character())
+        parameters = scan(aux.file, character(), quiet = TRUE)
         index = which("theta"==parameters)+2
         selection.strength = as.numeric(parameters[index])
     }
@@ -180,7 +181,7 @@ ReadPattern <- function(pattern = "DivSel-Rep-*",
                         sel.type = 'divergent',
                         direct.sel = T){
     folders  <- dir("output/", pattern)
-    main.data = llply(folders, function(x) ReadFolder(x, n.traits, sel.type, direct.sel), .progress='text')
+    main.data = llply(folders, function(x) ReadFolder(x, n.traits, sel.type, direct.sel))
     names(main.data) = folders
     return(main.data)
 }
@@ -279,15 +280,14 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
     return(time.series)
 }
 
-
 #main.data.div.sel = ReadPattern()
-#save(main.data.div.sel, file="./div.sel.Rdata")
+#save(main.data.div.sel, file="./rdatas/div.sel.Rdata")
 #main.data.corridor = ReadPattern("Corridor", sel.type = "corridor")
 #save(main.data.corridor, file='corridor.Rdata')
 #main.data.stabilizing = ReadPattern("Stabilizing", sel.type = "Stabilizing", direct.sel = F)
 #save(main.data.stabilizing, file='stabilizing.Rdata')
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
-#save(main.data.drift, file='drift.Rdata')
+#save(main.data.drift, file='./rdatas/drift.Rdata')
 
 #load("./corridor.Rdata")
 
