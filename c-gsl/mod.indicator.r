@@ -289,3 +289,7 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
 #save(main.data.drift, file='./rdatas/drift.Rdata')
 
+load("./rdatas/drift.Rdata")
+load("./rdatas/corridor.Rdata")
+load("./rdatas/div.sel.Rdata")
+load("./rdatas/stabilizing.Rdata")
