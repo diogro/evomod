@@ -289,4 +289,30 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
 #save(main.data.drift, file='./rdatas/drift.Rdata')
 
-load("./rdatas/drift.Rdata")
+#load("./rdatas/drift.Rdata")
+#load("./rdatas/corridor.Rdata")
+#load("./rdatas/div.sel.Rdata")
+#load("./rdatas/stabilizing.Rdata")
+
+TimeSeriesMantel <- function(cor.list, num.cores = 4){
+    if (num.cores > 1) {
+        library(doMC)
+        library(foreach)
+        registerDoMC(num.cores)
+        parallel = TRUE
+    }
+    else{
+        parallel = FALSE
+    }
+    n.gen = length(cor.list)
+    comparisons <- aaply(1:(n.gen-1), 1, function(x) MantelCor(cor.list[[x]], cor.list[[x+1]], iterations = 1)[1])
+    return(comparisons)
+}
+#time.series.drift.mantel = ldply(main.data.drift, function(x) TimeSeriesMantel(x$p.cor))
+#save(time.series.drift.mantel, file = "./rdatas/ts.mantel.Rdata")
+#time.series.stab.mantel = ldply(main.data.stabilizing, function(x) TimeSeriesMantel(x$p.cor))
+#save(time.series.drift.mantel, time.series.stab.mantel, file = "./rdatas/ts.mantel.Rdata")
+load("./rdatas/ts.mantel.Rdata")
+x = melt(time.series.stab.mantel)
+str(x)
+names(main.data.stabilizing[[1]])
