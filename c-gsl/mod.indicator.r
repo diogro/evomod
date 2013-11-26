@@ -8,11 +8,11 @@ ReadMatrices  <- function(input.file, n.traits){
     gen.number = data.init[seq(1,length(data.init[,1]),n.corrs+1),]
     raw.trait.means = data.init[-seq(1,length(data.init[,1]),n.corrs+1),]
     generations = length(gen.number)
-    cor.matrices = list()
+    cor.matrices = vector('list', generations)
+    current.mat = matrix(1, n.traits, n.traits)
     for(gen in 1:generations){
         lower = 1+((gen-1)*n.corrs)
         upper = gen*n.corrs
-        current.mat = matrix(1, n.traits, n.traits)
         current.mat[upper.tri(current.mat)] = raw.trait.means[lower:upper]
         current.mat[lower.tri(current.mat)] = t(current.mat)[lower.tri(current.mat)]
         cor.matrices[[gen]] = current.mat
@@ -26,7 +26,7 @@ ReadVariances  <- function(input.file, n.traits){
     gen.number = data.init[seq(1,length(data.init[,1]),n.traits+1),]
     raw.trait.means = data.init[-seq(1,length(data.init[,1]),n.traits+1),]
     generations = length(gen.number)
-    var.vectors = list()
+    var.vectors = vector('list', generations)
     for(gen in 1:generations){
         lower = 1+((gen-1)*n.traits)
         upper = gen*n.traits
@@ -39,7 +39,7 @@ ReadVariances  <- function(input.file, n.traits){
 
 CalcCovar  <- function(corr, vars){
     num.gens = length(vars)
-    covs = list()
+    covs = vector('list', num.gens)
     for(i in 1:num.gens)
         covs[[i]] = corr[[i]]*outer(vars[[i]], vars[[i]])
     names(covs) = names(vars)
@@ -47,6 +47,7 @@ CalcCovar  <- function(corr, vars){
 }
 
 ReadFolder  <- function(input.folder, n.traits = 10, sel.type, direct.sel = T){
+    print(input.folder)
     input.folder = paste("./output", input.folder, sep="/")
     input.file = paste(input.folder, "p.corr.dat", sep = '/')
     p.cor = ReadMatrices(input.file, n.traits)
@@ -66,7 +67,7 @@ ReadFolder  <- function(input.folder, n.traits = 10, sel.type, direct.sel = T){
 
     if(direct.sel){
         aux.file = paste(input.folder, "pop.parameters.txt", sep="/")
-        parameters = scan(aux.file, character())
+        parameters = scan(aux.file, character(), quiet = TRUE)
         index = which("theta"==parameters)+2
         selection.strength = as.numeric(parameters[index])
     }
@@ -114,7 +115,7 @@ MapEffectiveDimension <- function(mat.list){
     return(unlist(nd.list))
 }
 
-AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1){
+AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1, generations = 1:10000 + 20000){
     if (num.cores > 1) {
         library(doMC)
         library(foreach)
@@ -132,7 +133,7 @@ AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1){
         AVGRatio <- ldply(mat.list[length(mat.list)], function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
     else{
         AVGRatio <- ldply(mat.list, function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
-        AVGRatio['generation'] = rep(1:10000 + 20000, each = 3)
+        AVGRatio['generation'] = rep(generations, each = 3)
     }
     AVGRatio['Selection_Strength'] = Selection_Strength
     return(AVGRatio)
@@ -180,11 +181,7 @@ ReadPattern <- function(pattern = "DivSel-Rep-*",
                         sel.type = 'divergent',
                         direct.sel = T){
     folders  <- dir("output/", pattern)
-    main.data = list()
-    for (pop in 1:(length(folders))){
-        print(pop)
-        main.data[[pop]] = ReadFolder(folders[pop], n.traits, sel.type, direct.sel)
-    }
+    main.data = llply(folders, function(x) ReadFolder(x, n.traits, sel.type, direct.sel))
     names(main.data) = folders
     return(main.data)
 }
@@ -283,84 +280,39 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
     return(time.series)
 }
 
-
-
 #main.data.div.sel = ReadPattern()
-#save(main.data.div.sel, file="./div.sel.Rdata")
-main.data.corridor = ReadPattern("Corridor")
-save(main.data.corridor, file='corridor.Rdata')
+#save(main.data.div.sel, file="./rdatas/div.sel.Rdata")
+#main.data.corridor = ReadPattern("Corridor", sel.type = "corridor")
+#save(main.data.corridor, file='corridor.Rdata')
 #main.data.stabilizing = ReadPattern("Stabilizing", sel.type = "Stabilizing", direct.sel = F)
 #save(main.data.stabilizing, file='stabilizing.Rdata')
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
-#save(main.data.drift, file='drift.Rdata')
+#save(main.data.drift, file='./rdatas/drift.Rdata')
 
-#load("./div.sel.Rdata")
+#load("./rdatas/drift.Rdata")
+#load("./rdatas/corridor.Rdata")
+#load("./rdatas/div.sel.Rdata")
+#load("./rdatas/stabilizing.Rdata")
 
-#nd = LastGenStatMultiPlot(main.data.div.sel, MapEffectiveDimension, "Effective Dimensionality") + theme_bw()
-#ggsave("~/lg.nd.tiff")
-#r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/lg.r2.tiff")
-#flex = LastGenStatMultiPlotWithMean(main.data.div.sel, Flexibility, "Flexibility") + theme_bw()
-#ggsave("~/lg.flex.tiff")
-#evol = LastGenStatMultiPlot(main.data.div.sel, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Evolvability") + theme_bw()
-#ggsave("~/lg.evol.tiff")
-#auto = LastGenStatMultiPlotWithMean(main.data.div.sel, Autonomy, "Autonomy") + theme_bw()
-#ggsave("~/lg.auto.tiff")
-#avg.ratio = AVGRatioPlot(main.data.div.sel) + theme_bw()
-#ggsave("~/lg.avgratio.tiff")
-#corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/lg.corr.omega.tiff")
-
-#r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/ts.r2.tiff")
-#flex = StatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
-#ggsave("~/ts.flex.tiff")
-#evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
-#ggsave("~/ts.evol.tiff")
-#auto = StatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
-#ggsave("~/ts.auto.tiff")
-#avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/ts.avgratio.tiff")
-#corr.omega = StatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/ts.corr.omega.tiff")
-
-#load("./stabilizing.Rdata")
-#stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/tiffs/ts.stab.corr.omega.tiff")
-#stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/tiffs/ts.stab.r2.tiff")
-#stab.flex = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
-#ggsave("~/tiffs/ts.stab.flex.tiff")
-#stab.evol = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
-#ggsave("~/tiffs/ts.stab.evol.tiff")
-#stab.auto = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
-#ggsave("~/tiffs/ts.stab.auto.tiff")
-#stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/tiffs/ts.stab.avgratio.tiff")
-
-#load("./drift.Rdata")
-#drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/tiffs/ts.drift.corr.omega.tiff")
-#drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/tiffs/ts.drift.r2.tiff")
-#drift.flex = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
-#ggsave("~/tiffs/ts.drift.flex.tiff")
-#drift.evol = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
-#ggsave("~/tiffs/ts.drift.evol.tiff")
-#drift.auto = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
-#ggsave("~/tiffs/ts.drift.auto.tiff")
-#drift.avg.ratio = NoSelStatMultiPlot(main.data.drift, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/tiffs/ts.drift.avgratio.tiff")
-
-#drift.stab.corr.omega = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing , CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/tiffs/ts.drift.stab.corr.omega.tiff")
-#drift.stab.r2 = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/tiffs/ts.drift.stab.r2.tiff")
-#drift.stab.flex = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
-#ggsave("~/tiffs/ts.drift.stab.flex.tiff")
-#drift.stab.evol = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
-#ggsave("~/tiffs/ts.drift.stab.evol.tiff")
-#drift.stab.auto = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
-#ggsave("~/tiffs/ts.drift.stab.auto.tiff")
-#drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/tiffs/ts.drift.stab.avgratio.tiff")
+TimeSeriesMantel <- function(cor.list, num.cores = 4){
+    if (num.cores > 1) {
+        library(doMC)
+        library(foreach)
+        registerDoMC(num.cores)
+        parallel = TRUE
+    }
+    else{
+        parallel = FALSE
+    }
+    n.gen = length(cor.list)
+    comparisons <- aaply(1:(n.gen-1), 1, function(x) MantelCor(cor.list[[x]], cor.list[[x+1]], iterations = 1)[1])
+    return(comparisons)
+}
+#time.series.drift.mantel = ldply(main.data.drift, function(x) TimeSeriesMantel(x$p.cor))
+#save(time.series.drift.mantel, file = "./rdatas/ts.mantel.Rdata")
+#time.series.stab.mantel = ldply(main.data.stabilizing, function(x) TimeSeriesMantel(x$p.cor))
+#save(time.series.drift.mantel, time.series.stab.mantel, file = "./rdatas/ts.mantel.Rdata")
+load("./rdatas/ts.mantel.Rdata")
+x = melt(time.series.stab.mantel)
+str(x)
+names(main.data.stabilizing[[1]])
