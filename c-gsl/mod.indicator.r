@@ -377,7 +377,5 @@ TimeSeriesMantel <- function(cor.list, num.cores = 4){
                     #geom_smooth(aes(ymin = stat_lower, ymax = stat_upper, color=Selection_scheme), data=data.avg, stat="identity") +
                     #scale_y_continuous("sequential mantel")  +
                     #scale_x_continuous("Generation")
-avg = avgwrap(main.data.div.sel.drift[[1]]$p.cor)
 avgdivseldrift  =NoSelStatMultiPlot(main.data.div.sel.drift, avgwrap, "AVGRatio")
 ggsave("~/tiffs/div.sel.drift.avg.tiff")
-#str(avg)
