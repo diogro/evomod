@@ -1,5 +1,5 @@
 library(Morphometrics)
-ibrary(ggplot2)
+library(ggplot2)
 library(reshape2)
 
 ReadMatrices  <- function(input.file, n.traits){
@@ -115,7 +115,34 @@ MapEffectiveDimension <- function(mat.list){
     return(unlist(nd.list))
 }
 
-AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1, generations = 1:10000 + 20000){
+AVGRatioMap <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1, generations = 1:10000 + 20000){
+    if (num.cores > 1) {
+        library(doMC)
+        library(foreach)
+        registerDoMC(num.cores)
+        parallel = TRUE
+    }
+    else{
+        parallel = FALSE
+    }
+    n.traits = dim(mat.list[[1]])[1]
+    module.1 = rep(c(1,0), each = n.traits/2)
+    module.2 =  rep(c(0,1), each = n.traits/2)
+    modularity.hipot = cbind(module.1, module.2)
+    mod.mask = CreateHipotMatrix(modularity.hipot)[[3]]
+    mod.mask  <- as.logical(mod.mask[lower.tri(mod.mask)])
+    AVGRatio  <- function(x) mean(x[lower.tri(x)][mod.mask])/mean(x[lower.tri(x)][!mod.mask])
+    if(last.gen){
+        AVGRatio <- ldply(mat.list[length(mat.list)], AVGRatio, .parallel = parallel)
+        AVGRatio['Selection_Strength'] = Selection_Strength
+    }
+    else{
+        AVGRatio <- ldply(mat.list, AVGRatio, .parallel = parallel, .progress = "text")
+    }
+    return(AVGRatio)
+}
+
+AVGCorrelations <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1, generations = 1:10000 + 20000){
     if (num.cores > 1) {
         library(doMC)
         library(foreach)
@@ -132,7 +159,7 @@ AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1, 
     if(last.gen)
         AVGRatio <- ldply(mat.list[length(mat.list)], function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
     else{
-        AVGRatio <- ldply(mat.list, function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel)
+        AVGRatio <- ldply(mat.list, function(x) TestModularity(x, modularity.hipot, iterations=0), .parallel = parallel, .progress = "text")
         AVGRatio['generation'] = rep(generations, each = 3)
     }
     AVGRatio['Selection_Strength'] = Selection_Strength
@@ -140,7 +167,7 @@ AVGRatio <- function(mat.list, Selection_Strength, last.gen = T, num.cores = 1, 
 }
 
 AVGRatioPlot  <- function(pop.list, modules = FALSE, num.cores = 2){
-    avg <- ldply(pop.list, function(x) AVGRatio(x$p.cor, x$selection.strength, num.cores = num.cores), .progress = 'text')
+    avg <- ldply(pop.list, function(x) AVGCorrelations(x$p.cor, x$selection.strength, num.cores = num.cores), .progress = 'text')
     names(avg)[6] = "Avg_Ratio"
     if(modules){
         m.avg = melt(avg[,-c(2, 3, 6)], id.vars = c('.id', 'Selection_Strength'))
@@ -252,12 +279,34 @@ LastGenStatMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits = 
 }
 
 NoSelStatMultiPlot <- function(pop.list, StatMap, y.axis, n.traits = 10){
-    data.avg <- laply(pop.list, function (x) StatMap(x$p.cov))
-    data.avg <- adply(data.avg, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
-    data.avg[,1] = as.numeric(levels(data.avg[,1]))[data.avg[,1]]
+    data.avg <- ldply(pop.list, function (x) StatMap(x$p.cov), .progress = "text")
+    str(data.avg)
+    data.pop <- ddply(data.pop,'.id' , function(x) c(mean(x[,2]), quantile(x[,2], 0.025), quantile(x[,2], 0.975)))
     names(data.avg) = c("generation", "stat_mean", "stat_lower", "stat_upper")
+    data.avg$generation  <- as.numeric(data.avg$generation)
     time.series  <- ggplot(data.avg, aes(generation, stat_mean)) +
                     geom_smooth(aes(ymin = stat_lower, ymax = stat_upper), data=data.avg, stat="identity") +
+                    scale_y_continuous(y.axis)  +
+                    scale_x_continuous("Generation")
+    return(time.series)
+}
+
+avgwrap = function(x) AVGRatioMap(x, "0", F, 1, 1:10000 + 30000)
+NoSelStatMultiPlotTreePop <- function(drift.list, stab.list, nocorr.list, StatMap = avgwrap, y.axis = 'AVGRatio', n.traits = 10){
+    data.drift <- ldply(drift.list, function (x) StatMap(x$p.cov), .progress = "text")
+    data.stab <- ldply(stab.list, function (x) StatMap(x$p.cov), .progress = "text")
+    data.nocorr <- ldply(nocorr.list, function (x) StatMap(x$p.cov), .progress = "text")
+    data.drift <- ddply(data.drift,'.id' , function(x) c(mean(x[,2]), quantile(x[,2], 0.025), quantile(x[,2], 0.975)))
+    data.stab <- ddply(data.stab,'.id' , function(x) c(mean(x[,2]), quantile(x[,2], 0.025), quantile(x[,2], 0.975)))
+    data.nocorr <- ddply(data.nocorr,'.id' , function(x) c(mean(x[,2]), quantile(x[,2], 0.025), quantile(x[,2], 0.975)))
+    data.drift[,5] = rep("Drift", length(data.drift))
+    data.stab[,5] = rep("Correlated Stabilizing", length(data.stab))
+    data.nocorr[,5] = rep("Non Correlated Stabilizing", length(data.stab))
+    data.avg = data.frame(rbind(data.drift, data.stab, data.nocorr))
+    data.avg$generation  <- as.numeric(data.avg$generation)
+    names(data.avg) = c("generation", "stat_mean", "stat_lower", "stat_upper", "Selection_scheme")
+    time.series  <- ggplot(data.avg, aes(generation, stat_mean, color=Selection_scheme)) +
+                    geom_smooth(aes(ymin = stat_lower, ymax = stat_upper, color=Selection_scheme), data=data.avg, stat="identity") +
                     scale_y_continuous(y.axis)  +
                     scale_x_continuous("Generation")
     return(time.series)
@@ -288,13 +337,14 @@ NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n
 #save(main.data.stabilizing, file='stabilizing.Rdata')
 #main.data.drift = ReadPattern("Drift", sel.type = "drift", direct.sel = F)
 #save(main.data.drift, file='./rdatas/drift.Rdata')
-main.data.div.sel.drift = ReadPattern("DivSel.Drift", sel.type = "drift", direct.sel = F)
-save(main.data.div.sel.drift, file='./rdatas/div.sel.drift.Rdata')
+#main.data.div.sel.drift = ReadPattern("DivSel.Drift", sel.type = "drift", direct.sel = F)
+#save(main.data.div.sel.drift, file='./rdatas/div.sel.drift.Rdata')
 
 #load("./rdatas/drift.Rdata")
 #load("./rdatas/corridor.Rdata")
 #load("./rdatas/div.sel.Rdata")
 #load("./rdatas/stabilizing.Rdata")
+load("./rdatas/div.sel.drift.Rdata")
 
 TimeSeriesMantel <- function(cor.list, num.cores = 4){
     if (num.cores > 1) {
@@ -327,6 +377,7 @@ TimeSeriesMantel <- function(cor.list, num.cores = 4){
                     #geom_smooth(aes(ymin = stat_lower, ymax = stat_upper, color=Selection_scheme), data=data.avg, stat="identity") +
                     #scale_y_continuous("sequential mantel")  +
                     #scale_x_continuous("Generation")
-
-NoSelStatMultiPlot(main.data.div.sel.drift, function(x) AVGRatio(x, "0", F), "AVGRatio")
+avg = avgwrap(main.data.div.sel.drift[[1]]$p.cor)
+avgdivseldrift  =NoSelStatMultiPlot(main.data.div.sel.drift, avgwrap, "AVGRatio")
 ggsave("~/tiffs/div.sel.drift.avg.tiff")
+#str(avg)
