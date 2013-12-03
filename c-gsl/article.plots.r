@@ -93,6 +93,13 @@
 #ggsave("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
 ##Creating relevant plot objects
 
+load("./rdatas/div.sel.drift.Rdata")
+load("./rdatas/div.sel.stabilizing.Rdata")
+load("./rdatas/div.sel.noncor.stabilizing.Rdata")
+
+div.sel.plots  <- NoSelStatMultiPlotTreePop (main.data.div.sel.drift, main.data.div.sel.stabilizing, main.data.div.sel.noncor.stabilizing) + theme_bw()
+ggsave("~/tiffs/div.sel.drift.stab.noncorstab.tiff")
+
 #source('mod.indicator.r')
 ### Actual Figures
 
@@ -129,12 +136,12 @@ PlotFormat.Large.Short = function(x) ggsave(x, current.plot, width=6.83, height=
 ## Figure 2
 # Stabilizing Drift
 #drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/ts.drift.stab.avgratio.tiff")
+#PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/ts.drift.stab.avgratio.tiff")
 
 ## Figure 3
 # AVG directional
 #avg.ratio = AVGRatioPlot(main.data.div.sel) + theme_bw()
-PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/lg.avgratio.tiff")
+#PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/lg.avgratio.tiff")
 
 ## Figure 4
 #corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
@@ -146,3 +153,8 @@ PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/lg.a
 
 ## Figure 6
 
+cplot <- NoSelStatMultiPlotTreePop (main.data.div.sel.drift, main.data.div.sel.stabilizing, main.data.div.sel.noncor.stabilizing) + theme_bw()
+current.plot <- cplot + theme(legend.position = "bottom", text = element_text(size=12))
+current.plot  <- cplot + theme_bw()
+ggsave("~/tiffs/div.sel.drift.stab.noncorstab.tiff")
+PlotFormat.Large.Short("~/tiffs/div.sel.drift.stab.noncorstab.tiff")
