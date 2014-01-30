@@ -235,8 +235,8 @@ LastGenStatMultiPlotWithMean  <- function(pop.list, StatMap, y.axis, n.traits = 
     n.pop = length(pop.list)
     data.avg = array(dim=c(n.pop, 3))
     for (pop in 1:n.pop){
-        direct.stat <- CalcIsoStatMap(list(pop.list[[pop]]$p.cov[[n.gen]]), StatMap)
-        mean.stat <- CalcMeanStatMap(list(pop.list[[pop]]$p.cov[[n.gen]]), StatMap)
+        direct.stat <- CalcIsoStat(list(pop.list[[pop]]$p.cov[[n.gen]]), StatMap)
+        mean.stat <- CalcMeanStat(list(pop.list[[pop]]$p.cov[[n.gen]]), StatMap)
         print(pop)
         lower = pop
         label.vector = as.numeric(pop.list[[pop]]$selection.strength)
@@ -314,21 +314,22 @@ NoSelStatMultiPlotTreePop <- function(drift.list, stab.list, nocorr.list, StatMa
 }
 
 NoSelStatMultiPlotMultiPop <- function(drift.list, stab.list, StatMap, y.axis, n.traits = 10){
-    data.drift <- laply(drift.list, function (x) StatMap(x$p.cov))
-    data.stab <- laply(stab.list, function (x) StatMap(x$p.cov))
-    data.drift <- adply(data.drift, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
-    data.stab <- adply(data.stab, 2, function(x) c(mean(x), quantile(x, 0.025), quantile(x, 0.975)))
+    data.drift <- ldply(drift.list, function (x) StatMap(x$p.cov))
+    data.stab <- ldply(stab.list, function (x) StatMap(x$p.cov))
+    data.drift <- ddply(data.drift,'.id' , function(x) c(mean(x[,2]), quantile(x[,2], 0.025), quantile(x[,2], 0.975)))
+    data.stab <- ddply(data.stab,'.id' , function(x) c(mean(x[,2]), quantile(x[,2], 0.025), quantile(x[,2], 0.975)))
     data.drift[,5] = rep("Drift", length(data.drift))
     data.stab[,5] = rep("Stabilizing", length(data.stab))
     data.avg = data.frame(rbind(data.drift, data.stab))
-    data.avg[,1] = as.numeric(levels(data.avg[,1]))[data.avg[,1]]
     names(data.avg) = c("generation", "stat_mean", "stat_lower", "stat_upper", "Selection_scheme")
+    data.avg$generation  <- as.numeric(data.avg$generation)
     time.series  <- ggplot(data.avg, aes(generation, stat_mean, color=Selection_scheme)) +
                     geom_smooth(aes(ymin = stat_lower, ymax = stat_upper, color=Selection_scheme), data=data.avg, stat="identity") +
                     scale_y_continuous(y.axis)  +
                     scale_x_continuous("Generation")
     return(time.series)
 }
+
 
 #main.data.div.sel = ReadPattern()
 #save(main.data.div.sel, file="./rdatas/div.sel.Rdata")
