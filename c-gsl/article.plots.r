@@ -1,6 +1,11 @@
-#load("./corridor.Rdata")
+load("./rdatas/corridor.Rdata")
 
-#load("./div.sel.Rdata")
+avg.corridor = AVGRatioPlot(main.data.corridor, T)
+avg.corridor = avg.corridor + scale_colour_discrete(name = "Correlations", labels = c("Within\nModule 1", "Within\nModule 2", "Between\nModules"))+
+                        theme_bw(base_size = 10, base_family = "Helvetica") + theme(legend.position = "bottom")
+ggsave("~/tiffs/lg.avg.corridor.tiff", width = 8.7, height = 8.7, units = "cm", dpi = 1000)
+
+load("./rdatas/div.sel.Rdata")
 
 #nd = LastGenStatMultiPlot(main.data.div.sel, MapEffectiveDimension, "Effective Dimensionality") + theme_bw()
 #ggsave("~/lg.nd.tiff")
@@ -10,12 +15,16 @@
 #ggsave("~/lg.flex.tiff")
 #evol = LastGenStatMultiPlot(main.data.div.sel, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Evolvability") + theme_bw()
 #ggsave("~/lg.evol.tiff")
-#auto = LastGenStatMultiPlotWithMean(main.data.div.sel, Autonomy, "Autonomy") + theme_bw()
-#ggsave("~/lg.auto.tiff")
-#avg.ratio = AVGRatioPlot(main.data.div.sel) + theme_bw()
-#ggsave("~/lg.avgratio.tiff")
-#corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/lg.corr.omega.tiff")
+auto = LastGenStatMultiPlotWithMean(main.data.div.sel, Autonomy, "Autonomy")
+auto = auto + scale_colour_grey(name = '', start = 0, end = 0.5)+
+                        theme_bw(base_size = 10, base_family = "Helvetica") + theme(legend.position = c(0.8, 0.2))
+ggsave("~/tiffs/lg.auto.tiff", width = 8.7, height = 8.7, units = "cm", dpi = 1000)
+avg.ratio = AVGRatioPlot(main.data.div.sel) + theme_bw()
+avg.ratio = avg.ratio + theme_bw(base_size = 10, base_family = "Helvetica")
+ggsave("~/tiffs/lg.avgratio.tiff", width = 8.7, height = 8.7, units = "cm", dpi = 1000)
+corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
+corr.omega = corr.omega + theme_bw(base_size = 10, base_family = "Helvetica")
+ggsave("~/tiffs/lg.corr.omega.tiff", width = 8.7, height = 8.7, units = "cm", dpi = 1000)
 
 #r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/ts.r2.tiff")
@@ -30,7 +39,7 @@
 #corr.omega = StatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/ts.corr.omega.tiff")
 
-#load("./stabilizing.Rdata")
+load("./rdatas/stabilizing.Rdata")
 #stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/tiffs/ts.stab.corr.omega.tiff")
 #stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
@@ -44,7 +53,7 @@
 #stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/tiffs/ts.stab.avgratio.tiff")
 
-#load("./drift.Rdata")
+load("./rdatas/drift.Rdata")
 #drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/tiffs/ts.drift.corr.omega.tiff")
 #drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
@@ -68,8 +77,11 @@
 #ggsave("~/tiffs/ts.drift.stab.evol.tiff")
 #drift.stab.auto = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
 #ggsave("~/tiffs/ts.drift.stab.auto.tiff")
-#drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/tiffs/ts.drift.stab.avgratio.tiff")
+avgwrap = function(x) AVGRatioMap(x, "0", F, 1, 1:10000 + 20000)
+drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, avgwrap, "AVGRatio")
+drift.stab.avg.ratio = drift.stab.avg.ratio + scale_colour_grey(name = 'Selection scheme', start = 0, end = 0.5)+
+                        theme_bw(base_size = 10, base_family = "Helvetica") + theme( legend.position = c(0.8, 0.85))
+ggsave("~/tiffs/ts.drift.stab.avgratio.tiff", width = 8.7, height = 8.7, units = "cm", dpi = 1000)
 
 #burn.in.pop = ReadFolder("burn_in", sel.type = "burn.in", direct.sel=F)
 #burn.in.avg = AVGRatio(burn.in.pop$p.cor, 0, F, num.cores = 10, generations = 1:20000)
@@ -92,6 +104,15 @@
                                #"Between Modules")) + theme_bw()
 #ggsave("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
 ##Creating relevant plot objects
+
+load("./rdatas/div.sel.drift.Rdata")
+load("./rdatas/div.sel.stabilizing.Rdata")
+load("./rdatas/div.sel.noncor.stabilizing.Rdata")
+
+div.sel.plots  <- NoSelStatMultiPlotTreePop (main.data.div.sel.drift, main.data.div.sel.stabilizing, main.data.div.sel.noncor.stabilizing) + theme_bw()
+div.sel.plots = div.sel.plots + theme_bw(base_size = 10, base_family = "Helvetica") + theme( legend.position = "bottom") +
+scale_colour_discrete(name = "Selection\nscheme", labels = c("Correlated\nStabilizing", "Drift", "Uncorrelated\nStabilizing"))
+ggsave("~/tiffs/div.sel.drift.stab.noncorstab.tiff", width = 8.7, height = 8.7, units = "cm", dpi = 1000)
 
 #source('mod.indicator.r')
 ### Actual Figures
@@ -129,12 +150,12 @@ PlotFormat.Large.Short = function(x) ggsave(x, current.plot, width=6.83, height=
 ## Figure 2
 # Stabilizing Drift
 #drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/ts.drift.stab.avgratio.tiff")
+#PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/ts.drift.stab.avgratio.tiff")
 
 ## Figure 3
 # AVG directional
 #avg.ratio = AVGRatioPlot(main.data.div.sel) + theme_bw()
-PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/lg.avgratio.tiff")
+#PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/lg.avgratio.tiff")
 
 ## Figure 4
 #corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
@@ -146,3 +167,8 @@ PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/lg.a
 
 ## Figure 6
 
+cplot <- NoSelStatMultiPlotTreePop (main.data.div.sel.drift, main.data.div.sel.stabilizing, main.data.div.sel.noncor.stabilizing) + theme_bw()
+current.plot <- cplot + theme(legend.position = "bottom", text = element_text(size=12))
+current.plot  <- cplot + theme_bw()
+ggsave("~/tiffs/div.sel.drift.stab.noncorstab.tiff")
+PlotFormat.Large.Short("~/tiffs/div.sel.drift.stab.noncorstab.tiff")
