@@ -6,25 +6,26 @@
 #include "pop.h"
 
 void population_alloc (const int n_e, const int p, const int m,
-    const int burn_in, const int selective, const double mu, const double mu_b,
+    const int burn_in, const int stabilizing, const int selective, const double mu, const double mu_b,
     const double sigma, const double v_e, const gsl_vector *theta,
     const gsl_matrix *omega, Population *pop)
 {
     int i;
-    pop->n_e       = n_e;
-    pop->p         = p;
-    pop->m         = 2*m;
-    pop->burn_in   = burn_in;
-    pop->selective = selective;
-    pop->mu        = mu;
-    pop->mu_b      = mu_b;
-    pop->sigma     = sigma;
-    pop->v_e       = v_e;
-    pop->fitness   = (double *) malloc (pop->n_e*sizeof(double));
-    pop->y         = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
-    pop->b         = (gsl_matrix **) malloc (pop->n_e*sizeof(gsl_matrix *));
-    pop->x         = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
-    pop->z         = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
+    pop->n_e         = n_e;
+    pop->p           = p;
+    pop->m           = 2*m;
+    pop->burn_in     = burn_in;
+    pop->stabilizing = stabilizing;
+    pop->selective   = selective;
+    pop->mu          = mu;
+    pop->mu_b        = mu_b;
+    pop->sigma       = sigma;
+    pop->v_e         = v_e;
+    pop->fitness     = (double *) malloc (pop->n_e*sizeof(double));
+    pop->y           = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
+    pop->b           = (gsl_matrix **) malloc (pop->n_e*sizeof(gsl_matrix *));
+    pop->x           = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
+    pop->z           = (gsl_vector **) malloc (pop->n_e*sizeof(gsl_vector *));
     for (i = 0; i < pop->n_e; i++){
         pop->y[i] = gsl_vector_alloc(pop->m);
         pop->b[i] = gsl_matrix_alloc(pop->p, pop->m);
@@ -79,6 +80,7 @@ void population_copy (Population *dest, const Population *src)
     dest->p           = src->p;
     dest->m           = src->m;
     dest->burn_in     = src->burn_in;
+    dest->stabilizing = src->stabilizing;
     dest->selective   = src->selective;
     dest->mu          = src->mu;
     dest->mu_b        = src->mu_b;
@@ -106,7 +108,7 @@ void population_copy (Population *dest, const Population *src)
 
 void population_replicate (Population *dest, const Population *src)
 {
-    population_alloc (src->n_e, src->p, src->m, src->burn_in, src->selective,
+    population_alloc (src->n_e, src->p, src->m, src->burn_in, src-> stabilizing, src->selective,
             src->mu, src->mu_b, src->sigma, src->v_e, src->theta, src->omega,
             dest);
     population_copy (dest, src);
