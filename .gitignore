@@ -9,4 +9,22 @@ test.random.c
 c-gsl/output/
 c-gsl/input/
 *rdata
+*Rdata
 *rhistory
+# Object files
+*.o
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app

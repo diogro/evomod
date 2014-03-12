@@ -5,7 +5,7 @@
 #include "pop.h"
 
 void population_alloc (const int n_e, const int p, const int m,
-    const int burn_in, const int selective, const double mu, const double mu_b,
+    const int burn_in, const int stabilizing, const int selective, const double mu, const double mu_b,
     const double sigma, const double v_e, const gsl_vector *theta,
     const gsl_matrix *omega, Population *pop);
 
