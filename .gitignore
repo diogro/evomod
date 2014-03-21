@@ -30,3 +30,4 @@ c-gsl/.ipynb_checkpoints/
 *.out
 *.app
 .Rproj.user
+*.Rproj
