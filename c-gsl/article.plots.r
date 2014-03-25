@@ -71,25 +71,8 @@
 #drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~/tiffs/ts.drift.stab.avgratio.tiff")
 
-#burn.in.pop = ReadFolder("burn_in", sel.type = "burn.in", direct.sel=F)
-#burn.in.avg = AVGRatio(burn.in.pop$p.cor, 0, F, num.cores = 10, generations = 1:20000)
-#burn.in.avg['generation'] = burn.in.avg['generation']
-#burn.in.avg['Probability'] = NULL
-#burn.in.avg['Selection_Strength'] = NULL
-#m.avg = melt(burn.in.avg[,-c(2,5)], id.vars = c('.id', 'generation'))
-#m.avg = m.avg[!((m.avg['.id'] != "Full Integration") & (m.avg['variable'] == "AVG-")),]
-#m.avg = m.avg[!((m.avg['.id'] == "Full Integration") & (m.avg['variable'] == "AVG+")),]
-#avg.plot = ggplot(m.avg, aes(generation,
-                             #value,
-                             #group=interaction(variable, generation, .id),
-                             #colour=interaction(.id, variable))) +
-#layer(geom="point") +
-#labs(x="Generation",
-     #y="Average Correlation",
-     #color = "Module") +
-#scale_colour_discrete(labels=c("Within Module 1",
-                               #"Within Module 2",
-                               #"Between Modules")) + theme_bw()
+# burn.in.pop = ReadFolder("burn_in", sel.type = "burn.in", direct.sel=F)
+#burn.in.avg = PlotCorrs(burn.in.pop$p.cor)
 #ggsave("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
 ##Creating relevant plot objects
 
@@ -106,24 +89,7 @@ PlotFormat.Large.Short = function(x) ggsave(x, current.plot, width=6.83, height=
 
 ## figure 1
 
-#burn.in.avg = AVGRatio(burn.in.pop$p.cor, 0, F, num.cores = 10, generations = 1:20000)
-#burn.in.avg['generation'] = burn.in.avg['generation']
-#burn.in.avg['Probability'] = NULL
-#burn.in.avg['Selection_Strength'] = NULL
-#m.avg = melt(burn.in.avg[,-c(2,5)], id.vars = c('.id', 'generation'))
-#m.avg = m.avg[!((m.avg['.id'] != "Full Integration") & (m.avg['variable'] == "AVG-")),]
-#m.avg = m.avg[!((m.avg['.id'] == "Full Integration") & (m.avg['variable'] == "AVG+")),]
-#avg.plot = ggplot(m.avg, aes(generation,
-                             #value,
-                             #group=interaction(variable, generation, .id),
-                             #colour=interaction(.id, variable))) +
-#layer(geom="point") +
-#labs(x="Generation",
-     #y="Average Correlation",
-     #color = "Module") +
-#scale_colour_discrete(labels=c("Within Module 1",
-                               #"Within Module 2",
-                               #"Between Modules")) + theme_bw()
+burn.in.avg = PlotCorrs(burn.in.pop$p.cor)
 #PlotFormat.Small("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
 
 ## Figure 2
