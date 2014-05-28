@@ -34,7 +34,15 @@ NeFacetPlot = function(m.avg){
     scale_colour_discrete(labels=c("Within Module 1",
                                    "Within Module 2",
                                    "Between Modules")) + 
-    facet_wrap( ~ Population_Size, ncol = 4) + theme_bw()
+    theme_bw() + 
+theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) + 
+    facet_wrap( ~ Population_Size, ncol = 5) 
   return(avg.plot)
 }
 
+load("./rdatas/ne.data.frame.Rdata")
+ne.plot = NeFacetPlot(m.avg)
+ggsave("~/n_e.facet.plot.tiff", width= 16, units = "cm", dpi = 600)
+
+load("./rdatas/mu_b.Rdata")
+mu.plot = AVGRatioPlot(main.data.mu.b, T, 4, 'mu.ratio', "Mutation rate ratio"
