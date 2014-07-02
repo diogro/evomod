@@ -60,6 +60,55 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.corr.omega.RS.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
+corr.omega.Krz = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaKrz, "Fitness Surface Correlation")
+corr.omega.Krz= corr.omega.Krz + theme_bw() +
+theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = c(1, 0),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(colour = "black"))
+ggsave("~/lg.corr.omega.Krz.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+
+corr.omega.Feig = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaFirstEigen, "First Eigen Vector Correlation")
+corr.omega.Feig= corr.omega.Feig + theme_bw() +
+theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = c(1, 0),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(colour = "black"))
+ggsave("~/lg.corr.omega.Feig.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+
+corr.omega.Seig = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaSecondEigen, "Second Eigen Vector Correlation")
+corr.omega.Seig= corr.omega.Seig + theme_bw() +
+theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = c(1, 0),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(colour = "black"))
+ggsave("~/lg.corr.omega.Seig.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+
+first.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 1), "First Eigen Vector Variance")
+first.eigen.var= first.eigen.var + theme_bw() +
+theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = c(1, 0),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(colour = "black"))
+ggsave("~/lg.first.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+
+second.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 2), "Second Eigen Vector Variance")
+second.eigen.var= second.eigen.var + theme_bw() +
+theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = c(1, 0),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(colour = "black"))
+ggsave("~/lg.second.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+
+third.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 3), "third Eigen Vector Variance")
+third.eigen.var= third.eigen.var + theme_bw() +
+theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = c(1, 0),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(colour = "black"))
+ggsave("~/lg.third.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+
+
 #r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/ts.r2.tiff")
 #flex = StatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
