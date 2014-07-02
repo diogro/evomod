@@ -60,7 +60,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.corr.omega.RS.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
-corr.omega.Krz = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaKrz, "Fitness Surface Correlation")
+corr.omega.Krz = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaKrz, "Krznowski Correlation for 2 PC")
 corr.omega.Krz= corr.omega.Krz + theme_bw() +
 theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(legend.position = c(1, 0),
@@ -100,7 +100,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.second.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
-third.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 3), "third Eigen Vector Variance")
+third.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 3), "Third Eigen Vector Variance")
 third.eigen.var= third.eigen.var + theme_bw() +
 theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(legend.position = c(1, 0),
