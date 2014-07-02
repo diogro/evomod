@@ -6,6 +6,7 @@ typedef struct {
     int p;                // number of traits
     int m;                // number of (diploid) loci
     int burn_in;          // number of drift generations
+    int stabilizing;      // number of stabilizing generations
     int selective;        // number of selective generations
     int current_gen;      // current generation
     double mu;            // genotipic mutation rate

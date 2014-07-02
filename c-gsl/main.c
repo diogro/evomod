@@ -7,7 +7,7 @@
 
 int main(){
 
-    int n_e, traits, m, burn_in, selective, generation, i, j;
+    int n_e, traits, m, burn_in, stabilizing, selective, generation, i, j;
     double mu, mu_b, sigma, v_e;
     double *delta_theta;
     int bool_sim_type;
@@ -98,6 +98,7 @@ int main(){
     fscanf(parameters_in, "%lf", &sigma);
     fscanf(parameters_in, "%lf", &v_e);
     fscanf(parameters_in, "%d", &burn_in);
+    fscanf(parameters_in, "%d", &stabilizing);
     fscanf(parameters_in, "%d", &selective);
     delta_theta = (double *) malloc (traits*sizeof(double));
     for(i = 0; i < traits; i++){
@@ -112,6 +113,7 @@ int main(){
     fprintf(parameters_out, "sigma = %lf\n", sigma);
     fprintf(parameters_out, "v_e = %lf\n", v_e);
     fprintf(parameters_out, "burn_out = %d\n", burn_in);
+    fprintf(parameters_out, "stabilizing = %d\n", stabilizing);
     fprintf(parameters_out, "selective = %d\nDelta theta = ", selective);
     for(i = 0; i < traits; i++){
         fprintf(parameters_out, "%lf ", delta_theta[i]);
@@ -120,7 +122,7 @@ int main(){
     gsl_vector * theta = gsl_vector_alloc (traits);
     gsl_matrix * omega = gsl_matrix_alloc (traits, traits);
 
-    population_alloc (n_e, traits, m, burn_in, selective, mu, mu_b, sigma, v_e, theta, omega, pop);
+    population_alloc (n_e, traits, m, burn_in, stabilizing, selective, mu, mu_b, sigma, v_e, theta, omega, pop);
 
     population_theta_read (pop, theta_file);
     population_omega_read (pop, omega_file);
@@ -152,14 +154,17 @@ int main(){
     population_moments (pop);
     population_print_moments (pop, summary);
     pop->burn_in += pop->current_gen;
-    pop->selective += pop->burn_in;
+    pop->stabilizing += pop->burn_in;
+    pop->selective += pop->stabilizing;
 
-    for (generation = 0; generation < burn_in + selective; generation++){
-        printf("%d\n", generation);
-        population_next_generation(r, pop);
-        population_theta_change(pop, delta_theta);
-        population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
-    }
+	for (generation = 0; generation < burn_in + stabilizing + selective; generation++){
+		printf("%d\n", generation);
+		population_next_generation(r, pop);
+		if(generation > burn_in + stabilizing){
+			population_theta_change(pop, delta_theta);
+		}
+		population_write_moments (pop, phenotype, g_corr, p_corr, g_var, p_var, h_var);
+	}
     population_print_moments (pop, summary);
     if (bool_print_pop)
         population_fprintf (pop, out_population);
