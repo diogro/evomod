@@ -3,6 +3,7 @@ load("./rdatas/corridor.Rdata")
 devtools::install_github('Evomod-R', 'diogro')
 library(EvomodR)
 library(ggplot2)
+library(reshape2)
 modules.corridor = AVGRatioPlot(main.data.corridor, TRUE)
 modules.corridor = modules.corridor + theme_bw() +
   theme(legend.position = c(0, 1),
@@ -30,7 +31,8 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1),
       legend.position = c(1, 0),
       legend.justification = c(1, 0),
       legend.background = element_rect(fill="transparent"),
-      legend.title = element_text(""))
+      legend.title = element_text("")) +
+scale_colour_discrete(name = "")
 ggsave("~/lg.auto.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 avg.ratio = AVGRatioPlot(main.data.div.sel)
@@ -41,6 +43,19 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.avgratio.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
+eigen.var = LastGenMultiStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 3), "Eigenvalues")
+eigen.var= eigen.var + theme_bw() +
+theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+  #theme(legend.position = c(1, 0),
+        #legend.justification = c(1, 0),
+        #legend.background = element_rect(colour = "black"))
+ggsave("~/lg.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+
+
+tiff("~/divergent_plot.tiff", height = 7, width = 17.8, units="cm", res = 600)
+divergent_plot = grid.arrange(avg.ratio, eigen.var, auto, ncol = 3)
+dev.off()
+
 corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation")
 corr.omega = corr.omega + theme_bw() +
 theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -48,9 +63,6 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.corr.omega.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
-tiff("~/divergent_plot.tiff", height = 7, width = 17.8, units="cm", res = 600)
-divergent_plot = grid.arrange(avg.ratio, corr.omega, auto, ncol = 3)
-dev.off()
 
 corr.omega.RS = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaRS, "Fitness Surface Correlation")
 corr.omega.RS= corr.omega.RS + theme_bw() +
@@ -68,45 +80,18 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.corr.omega.Krz.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
-corr.omega.Feig = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaFirstEigen, "First Eigen Vector Correlation")
-corr.omega.Feig= corr.omega.Feig + theme_bw() +
+corr.omega.eigenvector = LastGenMultiStatMultiPlot(main.data.div.sel, CalcCorrOmegaEigenVector, "Eigenvector Correlation")
+corr.omega.eigenvector= corr.omega.eigenvector + theme_bw() +
 theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
+scale_colour_discrete(name = "Eigenvector") +
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "black"))
-ggsave("~/lg.corr.omega.Feig.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg.corr.omega.evecs.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
-corr.omega.Seig = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaSecondEigen, "Second Eigen Vector Correlation")
-corr.omega.Seig= corr.omega.Seig + theme_bw() +
-theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(legend.position = c(1, 0),
-        legend.justification = c(1, 0),
-        legend.background = element_rect(colour = "black"))
-ggsave("~/lg.corr.omega.Seig.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
-
-first.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 1), "First Eigen Vector Variance")
-first.eigen.var= first.eigen.var + theme_bw() +
-theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(legend.position = c(1, 0),
-        legend.justification = c(1, 0),
-        legend.background = element_rect(colour = "black"))
-ggsave("~/lg.first.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
-
-second.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 2), "Second Eigen Vector Variance")
-second.eigen.var= second.eigen.var + theme_bw() +
-theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(legend.position = c(1, 0),
-        legend.justification = c(1, 0),
-        legend.background = element_rect(colour = "black"))
-ggsave("~/lg.second.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
-
-third.eigen.var = LastGenStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 3), "Third Eigen Vector Variance")
-third.eigen.var= third.eigen.var + theme_bw() +
-theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(legend.position = c(1, 0),
-        legend.justification = c(1, 0),
-        legend.background = element_rect(colour = "black"))
-ggsave("~/lg.third.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+tiff("~/comparison_plot.tiff", height = 17, width = 14, units="cm", res = 600)
+comparison_plot = grid.arrange(corr.omega, corr.omega.RS, corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
+dev.off()
 
 
 #r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
