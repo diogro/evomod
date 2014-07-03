@@ -93,6 +93,10 @@ tiff("~/comparison_plot.tiff", height = 17, width = 14, units="cm", res = 600)
 comparison_plot = grid.arrange(corr.omega, corr.omega.RS, corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
 dev.off()
 
+tiff("~/subspace_plot.tiff", height = 7, width = 10, units="cm", res = 600)
+comparison_plot = grid.arrange(corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
+dev.off()
+
 
 #r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
 #ggsave("~/ts.r2.tiff")
