@@ -4,24 +4,23 @@ devtools::install_github('Evomod-R', 'diogro')
 library(EvomodR)
 library(ggplot2)
 library(reshape2)
+
 modules.corridor = AVGRatioPlot(main.data.corridor, TRUE)
 modules.corridor = modules.corridor + theme_bw() +
   theme(legend.position = c(0, 1),
         legend.justification = c(0, 1),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/lg.avg.corridor.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_avg_corridor.tiff", width= 8.7, height = 13.5, units =  "cm", dpi = 600)
+
+modules.div = AVGRatioPlot(main.data.div.sel, TRUE)
+modules.div = modules.div + theme_bw() +
+  theme(legend.position = c(0, 0.25),
+        legend.justification = c(0, 1),
+        legend.background = element_rect(fill="transparent"))
+ggsave("~/lg_avg_div.tiff", width= 8.7, height = 13.5, units =  "cm", dpi = 600)
 
 
 load("./rdatas/div.sel.Rdata")
-
-#nd = LastGenStatMultiPlot(main.data.div.sel, MapEffectiveDimension, "Effective Dimensionality") + theme_bw()
-#ggsave("~/lg.nd.tiff")
-#r2 = LastGenStatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/lg.r2.tiff")
-#flex = LastGenStatMultiPlotWithMean(main.data.div.sel, Flexibility, "Flexibility") + theme_bw()
-#ggsave("~/lg.flex.tiff")
-#evol = LastGenStatMultiPlot(main.data.div.sel, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Evolvability") + theme_bw()
-#ggsave("~/lg.evol.tiff")
 
 install.packages('gridExtra')
 library(gridExtra)
@@ -43,7 +42,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.avgratio.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
-eigen.var = LastGenMultiStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 3), "Eigenvalues")
+eigen.var = LastGenMultiStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 10), "Eigenvalues (% variation)")
 eigen.var= eigen.var + theme_bw() +
 theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
   #theme(legend.position = c(1, 0),
@@ -56,7 +55,7 @@ tiff("~/divergent_plot.tiff", height = 7, width = 17.8, units="cm", res = 600)
 divergent_plot = grid.arrange(avg.ratio, eigen.var, auto, ncol = 3)
 dev.off()
 
-corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation")
+corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation (Mantel)")
 corr.omega = corr.omega + theme_bw() +
 theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(legend.position = c(1, 0),
@@ -64,7 +63,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
         legend.background = element_rect(colour = "black"))
 ggsave("~/lg.corr.omega.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
-corr.omega.RS = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaRS, "Fitness Surface Correlation")
+corr.omega.RS = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaRS, "Fitness Surface Correlation (RS)")
 corr.omega.RS= corr.omega.RS + theme_bw() +
 theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(legend.position = c(1, 0),
@@ -86,7 +85,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
 scale_colour_discrete(name = "Eigenvector") +
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
-        legend.background = element_rect(colour = "black"))
+        legend.background = element_rect(colour = "transparent"))
 ggsave("~/lg.corr.omega.evecs.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 tiff("~/comparison_plot.tiff", height = 17, width = 14, units="cm", res = 600)
@@ -94,7 +93,7 @@ comparison_plot = grid.arrange(corr.omega, corr.omega.RS, corr.omega.Krz, corr.o
 dev.off()
 
 tiff("~/subspace_plot.tiff", height = 7, width = 10, units="cm", res = 600)
-comparison_plot = grid.arrange(corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
+subspace_plot = grid.arrange(corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
 dev.off()
 
 
@@ -164,41 +163,15 @@ burn.in.avg = burn.in.avg + theme_bw() +
         legend.justification = c(0, 1),
         legend.background = element_rect(fill="transparent"))
 ggsave("~/burnin.p.avg.corr.tiff")
-##Creating relevant plot objects
 
-#source('mod.indicator.r')
-### Actual Figures
+library(mvtnorm)
+Ppop = rmvnorm(100, sigma = P)
+Omegapop = rmvnorm(100, sigma = omega)
+pop = rbind(Ppop, Omegapop)
+f = rep(c("p", "o"), e = 100)
+out = phillips.cpc(pop, f)
 
-library(ggplot2)
-library(scales)
-load("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/article.plots.rdata")
-PlotFormat.Small = function(x) ggsave(x, current.plot, width=3.27, height=5)
-PlotFormat.Med = function(x) ggsave(x, current.plot, width=4.86, height=5)
-PlotFormat.Large = function(x) ggsave(x, current.plot, width=6.83, height=4)
-PlotFormat.Large.Short = function(x) ggsave(x, current.plot, width=6.83, height=3)
-
-## figure 1
-
-burn.in.avg = PlotCorrs(burn.in.pop$p.cor)
-#PlotFormat.Small("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/burnin.p.avg.corr.tiff")
-
-## Figure 2
-# Stabilizing Drift
-#drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/ts.drift.stab.avgratio.tiff")
-
-## Figure 3
-# AVG directional
-#avg.ratio = AVGRatioPlot(main.data.div.sel) + theme_bw()
-PlotFormat.Large.Short("~/Dropbox/labbio/articles/EvoMod\ -\ article/images/lg.avgratio.tiff")
-
-## Figure 4
-#corr.omega = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#PlotFormat.Large("~/lg.corr.omega.tiff")
-
-## Figure 5
-#auto = LastGenStatMultiPlotWithMean(main.data.div.sel, Autonomy, "Autonomy") + theme_bw()
-#PlotFormat.Large.Short("~/lg.auto.tiff")
-
-## Figure 6
-
+omega = as.matrix(read.table("~/projects/evomod/c-gsl/input/omega.csv"))
+P = main.data.div.sel[[198]]$p.cov[[10000]]
+library(xtable)
+xtable(cbind(eigen(omega)$vectors[,1:2], eigen(P)$vectors[,1:2]))
