@@ -17,7 +17,7 @@ modules.div = modules.div + theme_bw() +
   theme(legend.position = c(0, 0.25),
         legend.justification = c(0, 1),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/lg_avg_div.tiff", width= 8.7, height = 13.5, units =  "cm", dpi = 600)
+ggsave("~/lg_avg_div.tiff", width= 15, height = 10, units =  "cm", dpi = 600)
 
 
 load("./rdatas/div.sel.Rdata")
