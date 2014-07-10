@@ -32,7 +32,7 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1),
       legend.background = element_rect(fill="transparent"),
       legend.title = element_text("")) +
 scale_colour_discrete(name = "")
-ggsave("~/lg.auto.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_auto.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 avg.ratio = AVGRatioPlot(main.data.div.sel)
 avg.ratio = avg.ratio  + theme_bw() +
@@ -40,7 +40,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "black"))
-ggsave("~/lg.avgratio.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_avgratio.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 eigen.var = LastGenMultiStatMultiPlot(main.data.div.sel, function(x) EigenVar(x, 10), "Eigenvalues (% variation)")
 eigen.var= eigen.var + theme_bw() +
@@ -48,7 +48,7 @@ theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1
   #theme(legend.position = c(1, 0),
         #legend.justification = c(1, 0),
         #legend.background = element_rect(colour = "black"))
-ggsave("~/lg.eigen.var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_eigen_var.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 
 tiff("~/divergent_plot.tiff", height = 7, width = 17.8, units="cm", res = 600)
@@ -61,7 +61,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "black"))
-ggsave("~/lg.corr.omega.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_corr_omega.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 corr.omega.RS = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaRS, "Fitness Surface Correlation (RS)")
 corr.omega.RS= corr.omega.RS + theme_bw() +
@@ -69,7 +69,7 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "black"))
-ggsave("~/lg.corr.omega.RS.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_corr_omega_RS.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 corr.omega.Krz = LastGenStatMultiPlot(main.data.div.sel, CalcCorrOmegaKrz, "Krznowski Correlation for 2 PC")
 corr.omega.Krz= corr.omega.Krz + theme_bw() +
@@ -77,19 +77,24 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "black"))
-ggsave("~/lg.corr.omega.Krz.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_corr_omega_Krz.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 corr.omega.eigenvector = LastGenMultiStatMultiPlot(main.data.div.sel, CalcCorrOmegaEigenVector, "Eigenvector Correlation")
 corr.omega.eigenvector= corr.omega.eigenvector + theme_bw() +
 theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1)) +
 scale_colour_discrete(name = "Eigenvector") +
+geom_hline(aes(yintercept = 0.7), color = "black") +
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "transparent"))
-ggsave("~/lg.corr.omega.evecs.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_corr_omega_evecs.tiff", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
 tiff("~/comparison_plot.tiff", height = 17, width = 14, units="cm", res = 600)
 comparison_plot = grid.arrange(corr.omega, corr.omega.RS, corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
+dev.off()
+
+tiff("~/small_comparison_plot.tiff", height = 10, width = 14, units="cm", res = 600)
+comparison_plot = grid.arrange(corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
 dev.off()
 
 tiff("~/subspace_plot.tiff", height = 7, width = 10, units="cm", res = 600)
