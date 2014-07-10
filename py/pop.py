@@ -11,7 +11,7 @@ Options:
    -s sigma               mutation size [default: 0.2]
    -e amb                 enviromental noise [default: 0.8]
    -v omega_var           selection variance [default: 1.0]
-   -o omega_mat           selection correlation matrix [default: omega.csv]
+   -o omega_mat           selection correlation matrix [default: input/omega.csv]
    -t time                number of generations [default: 1]
    -d delta_S             change in optimal per generation [default: 0.0]
 """
@@ -35,6 +35,8 @@ class Individual:
         self.mu = mu              # genetic effects mutation rate
         self.mu_b = mu_b          # ontogenetic effects mutation rate
         self.sigma = sigma        # genetic mutation variance
+        self.elocus = np.array(range(0, 2*self.m, 2))
+        self.olocus = np.array(range(1, 2*self.m + 1, 2))
 
     def generate(self):
         """creates an ind with Individual parameters"""
@@ -79,11 +81,17 @@ class Individual:
                      dtype=float)              # binary ontogenetic matrix
         y = np.zeros(2 * self.m, dtype=float)  # gene vector
         alele = np.random.randint(0, 2, size=2 * self.m)
-        for locus in xrange(self.m):
-            y[2 * locus] = ind_1['y'][2 * locus + alele[2 * locus]]
-            y[2 * locus + 1] = ind_2['y'][2 * locus + alele[2 * locus + 1]]
-            b[:, 2 * locus] = ind_1['b'][:, 2 * locus + alele[2 * locus]]
-            b[:, 2 * locus + 1] = ind_2['b'][:, 2 * locus + alele[2 * locus + 1]]
+
+        y[self.elocus] = ind_1['y'][self.elocus + alele[self.elocus]]
+        y[self.olocus] = ind_2['y'][self.elocus + alele[self.olocus]]
+        b[:, self.elocus] = ind_1['b'][:, self.elocus + alele[self.elocus]]
+        b[:, self.olocus] = ind_2['b'][:, self.elocus + alele[self.olocus]]
+
+#        for locus in xrange(self.m):
+#            y[2 * locus] = ind_1['y'][2 * locus + alele[2 * locus]]
+#            y[2 * locus + 1] = ind_2['y'][2 * locus + alele[2 * locus + 1]]
+#            b[:, 2 * locus] = ind_1['b'][:, 2 * locus + alele[2 * locus]]
+#            b[:, 2 * locus + 1] = ind_2['b'][:, 2 * locus + alele[2 * locus + 1]]
         x = np.dot(b, y)                       # additive effects vector
         z = x + np.random.normal(0, self.amb,
                                  self.p)       # phenotipic values vector
@@ -144,7 +152,7 @@ class Population:
         out = mp.Queue()
         chunk = self.n_e/cores
         procs = []
-        fitp = [] 
+        fitp = []
 
         for i in range(cores):
             procs.append(pool.Process(target=f.partial(fit, self),
@@ -180,7 +188,7 @@ class Population:
         out = mp.Queue()
         chunk = len(pairs)/cores
         procs = []
-        pop = [] 
+        pop = []
 
         for i in range(cores):
             procs.append(pool.Process(target=f.partial(cross, self),
@@ -198,21 +206,18 @@ class Population:
         print "MUTA"
         self.mutate()
         print "FIT"
-        self.pupdate_fitness()
+        self.update_fitness()
         sires = np.random.choice(self.n_e, size=self.n_e,
                                  p=self.fitness, replace=True)
         dames = np.random.choice(self.n_e, size=self.n_e,
                                  p=self.fitness, replace=True)
 
         pairs = zip(sires, dames)
-        if len(pairs) >= 100:
-            self.pop = self.crossp(pairs)
-        else:
-            new_pop = []
-            for k in xrange(self.n_e):
-                new_pop.append(self.indmod.cross(self.pop[sires[k]],
-                                                 self.pop[dames[k]]))
-            self.pop = new_pop
+        new_pop = []
+        for k in xrange(self.n_e):
+            new_pop.append(self.indmod.cross(self.pop[sires[k]],
+                                             self.pop[dames[k]]))
+        self.pop = new_pop
 
         self.current_gen += 1
         self.teta += delta_s
