@@ -169,17 +169,19 @@ burn.in.avg = burn.in.avg + theme_bw() +
 ggsave("~/burnin.p.avg.corr.tiff")
 
 library(mvtnorm)
-Ppop = rmvnorm(100, sigma = P)
-Omegapop = rmvnorm(100, sigma = omega)
+library(cpcbp)
+omega = as.matrix(read.table("~/projects/evomod/c-gsl/input/omega.csv"))
+P = main.data.div.sel[[198]]$p.cov[[10000]]
+write.csv2(rbind(omega, P),"~/Desktop/cpc-mats.csv"  )
+Ppop = rmvnorm(20, sigma = P)
+Omegapop = rmvnorm(20, sigma = omega)
 pop = rbind(Ppop, Omegapop)
-f = rep(c("p", "o"), e = 100)
+f = rep(c("p", "o"), e = 20)
 out = phillips.cpc(pop, f)
 
 if(!require(gridExtra)){install.packages('gridExtra'); library(gridExtra)}
 if(!require(ellipse)){install.packages('ellipse'); library(ellipse)}
 
-omega = as.matrix(read.table("~/projects/evomod/c-gsl/input/omega.csv"))
-P = main.data.div.sel[[198]]$p.cov[[10000]]
 library(xtable)
 xtable(cbind(eigen(omega)$vectors[,1:2], eigen(P)$vectors[,1:2]))
 
