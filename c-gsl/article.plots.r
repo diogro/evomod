@@ -22,8 +22,7 @@ ggsave("~/lg_avg_div.tiff", width= 15, height = 10, units =  "cm", dpi = 600)
 
 load("./rdatas/div.sel.Rdata")
 
-install.packages('gridExtra')
-library(gridExtra)
+
 auto = LastGenStatMultiPlotWithMean(main.data.div.sel, Autonomy, "Autonomy")
 auto = auto + theme_bw() +
 theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -176,7 +175,22 @@ pop = rbind(Ppop, Omegapop)
 f = rep(c("p", "o"), e = 100)
 out = phillips.cpc(pop, f)
 
+if(!require(gridExtra)){install.packages('gridExtra'); library(gridExtra)}
+if(!require(ellipse)){install.packages('ellipse'); library(ellipse)}
+
 omega = as.matrix(read.table("~/projects/evomod/c-gsl/input/omega.csv"))
 P = main.data.div.sel[[198]]$p.cov[[10000]]
 library(xtable)
 xtable(cbind(eigen(omega)$vectors[,1:2], eigen(P)$vectors[,1:2]))
+
+omega[omega == 0] <- 0.000001
+eigen_omega = eigen(omega)
+
+cov_mat_1 = main.data.div.sel[[198]]$p.cov[[1]]
+pop_mat_omega_1 = t(eigen_omega$vectors) %*% cov_mat_1 %*% eigen_omega$vectors
+
+cov_mat_2 = main.data.div.sel[[198]]$p.cov[[10000]]
+pop_mat_omega_2= t(eigen_omega$vectors) %*% cov_mat_2 %*% eigen_omega$vectors
+
+plot(ellipse((pop_mat_omega_2[1:2, 1:2])), col = 'red')
+points(ellipse((pop_mat_omega_1[1:2, 1:2])))
