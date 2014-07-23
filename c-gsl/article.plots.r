@@ -48,7 +48,6 @@ theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1
         #legend.background = element_rect(colour = "black"))
 ggsave("~/lg_eigen_var.png", width= 8.7, height = 10, units =  "cm", dpi = 600)
 
-
 png("~/divergent_plot.png", height = 7, width = 17.8, units="cm", res = 600)
 divergent_plot = grid.arrange(avg.ratio, eigen.var, auto, ncol = 3)
 dev.off()
