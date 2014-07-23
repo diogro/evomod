@@ -1,4 +1,4 @@
-load("./rdatas/corridor.Rdata")
+load("./rdatas/non.cor.corridor.Rdata")
 
 devtools::install_github('Evomod-R', 'diogro')
 library(EvomodR)
@@ -6,7 +6,7 @@ library(ggplot2)
 library(reshape2)
 library(gridExtra)
 
-modules.corridor = AVGRatioPlot(main.data.corridor, TRUE)
+modules.corridor = AVGRatioPlot(non.cor.corridor, TRUE)
 modules.corridor = modules.corridor + theme_bw() +
   theme(legend.position = c(0, 1),
         legend.justification = c(0, 1),
