@@ -17,10 +17,10 @@ load("./rdatas/non.cor.div.sel.Rdata")
 
 modules.div = AVGRatioPlot(non.cor.div.sel, TRUE)
 modules.div = modules.div + theme_bw() +
-  theme(legend.position = c(0, 0.25),
-        legend.justification = c(0, 1),
+  theme(legend.position = c(0, 0),
+        legend.justification = c(0, 0),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/lg_avg_div.png", width= 15, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_avg_div.png", width= 18, height = 9, units =  "cm", dpi = 600)
 
 auto = LastGenStatMultiPlotWithMean(non.cor.div.sel, Autonomy, "Autonomy")
 auto = auto + theme_bw() +
@@ -112,7 +112,7 @@ dev.off()
 #corr.omega = StatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~/ts.corr.omega.png")
 
-load("./rdatas/stabilizing.Rdata")
+load("./rdatas/non.cor.stabilizing.Rdata")
 #stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~.pngs/ts.stab.corr.omega.png")
 #stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
@@ -126,7 +126,7 @@ load("./rdatas/stabilizing.Rdata")
 #stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
 #ggsave("~.pngs/ts.stab.avgratio.png")
 
-load("./rdatas/drift.Rdata")
+load("./rdatas/non.cor.drift.Rdata")
 #drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
 #ggsave("~.pngs/ts.drift.corr.omega.png")
 #drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
@@ -152,21 +152,25 @@ load("./rdatas/drift.Rdata")
 #ggsave("~.pngs/ts.drift.stab.auto.png")
 
 drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(non.cor.drift, non.cor.stabilizing, AVGRatioSimple, "AVGRatio")
-drift.stab.avg.ratio = drift.stab.avg.ratio + theme_bw() +
+drift.stab.avg.ratio.plot = drift.stab.avg.ratio + theme_bw() +
 scale_colour_discrete(name = "Selective regime",
                       labels = c("Drift","Correlated Stabilizing Selection")) +
   theme(legend.position = c(0, 1),
-        legend.justification = c(0, 1),
+        legend.justification = c(0, 0.85),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/ts_drift_stab_avgratio.png", width= 12, height = 10, units =  "cm", dpi = 600)
+ggsave("~/ts_drift_stab_avgratio.png", width= 18, height = 9, units =  "cm", dpi = 600)
 
 burn.in.pop = ReadFolder("burn_in", sel.type = "burn.in", direct.sel=F)
 burn.in.avg = PlotCorrs(burn.in.pop$p.cor)
-burn.in.avg = burn.in.avg + theme_bw() +
-  theme(legend.position = c(0, 1),
-        legend.justification = c(0, 1),
+burn.in.plot = burn.in.avg + theme_bw() +
+  annotate("text", x = 10000,
+                y = 0.09, label = "Uncorrelated Stabilizing\n Selection", angle=0, size=3,
+                colour='black', face="bold") +
+  geom_segment(aes(x = 10000, y = 0.1, xend = 10000, yend = 0.13), colour='black', size=0.5, arrow = arrow(length = unit(0.5, "cm"))) +
+  theme(legend.position = c(1, 1),
+        legend.justification = c(1, 1),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/burnin.p.avg.corr.png")
+ggsave("~/burnin_p_avg_corr.png", width= 18, height = 9, units =  "cm", dpi = 600)
 
 library(mvtnorm)
 library(cpcbp)
