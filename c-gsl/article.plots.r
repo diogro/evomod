@@ -171,7 +171,7 @@ ggsave("~/burnin.p.avg.corr.png")
 library(mvtnorm)
 library(cpcbp)
 omega = as.matrix(read.table("~/projects/evomod/c-gsl/input/omega.csv"))
-P = main.data.div.sel[[198]]$p.cov[[10000]]
+P = non.cor.div.sel[[198]]$p.cov[[10000]]
 write.csv2(rbind(omega, P),"~/Desktop/cpc-mats.csv"  )
 Ppop = rmvnorm(20, sigma = P)
 Omegapop = rmvnorm(20, sigma = omega)
@@ -188,10 +188,10 @@ xtable(cbind(eigen(omega)$vectors[,1:2], eigen(P)$vectors[,1:2]))
 omega[omega == 0] <- 0.000001
 eigen_omega = eigen(omega)
 
-cov_mat_1 = main.data.div.sel[[198]]$p.cov[[1]]
+cov_mat_1 = non.cor.div.sel[[198]]$p.cov[[1]]
 pop_mat_omega_1 = t(eigen_omega$vectors) %*% cov_mat_1 %*% eigen_omega$vectors
 
-cov_mat_2 = main.data.div.sel[[198]]$p.cov[[10000]]
+cov_mat_2 = non.cor.div.sel[[198]]$p.cov[[10000]]
 pop_mat_omega_2= t(eigen_omega$vectors) %*% cov_mat_2 %*% eigen_omega$vectors
 
 plot(ellipse((pop_mat_omega_2[1:2, 1:2])), col = 'red')
