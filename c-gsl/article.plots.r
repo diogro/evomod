@@ -150,11 +150,13 @@ load("./rdatas/drift.Rdata")
 #ggsave("~.pngs/ts.drift.stab.evol.png")
 #drift.stab.auto = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
 #ggsave("~.pngs/ts.drift.stab.auto.png")
-drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, AVGRatioSimple, "AVGRatio")
-save(drift.stab.avg.ratio, file= "./rdatas/drift.stab.avg.ratio.Rdata")
+
+drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(non.cor.drift, non.cor.stabilizing, AVGRatioSimple, "AVGRatio")
 drift.stab.avg.ratio = drift.stab.avg.ratio + theme_bw() +
-  theme(legend.position = c(1, 1),
-        legend.justification = c(1, 1),
+scale_colour_discrete(name = "Selective regime",
+                      labels = c("Drift","Correlated Stabilizing Selection")) +
+  theme(legend.position = c(0, 1),
+        legend.justification = c(0, 1),
         legend.background = element_rect(fill="transparent"))
 ggsave("~/ts_drift_stab_avgratio.png", width= 12, height = 10, units =  "cm", dpi = 600)
 
