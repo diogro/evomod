@@ -1,6 +1,8 @@
 load("./rdatas/non.cor.corridor.Rdata")
 
 devtools::install_github('Evomod-R', 'diogro')
+
+detach("package:EvomodR", unload=TRUE)
 library(EvomodR)
 library(ggplot2)
 library(reshape2)
@@ -11,7 +13,7 @@ modules.corridor = modules.corridor + theme_bw() +
   theme(legend.position = c(0, 1),
         legend.justification = c(0, 1),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/lg_avg_corridor.png", width= 8.7, height = 13.5, units =  "cm", dpi = 600)
+ggsave("~/lg_avg_corridor.tiff", width= 15, height = 15, units =  "cm", dpi = 600)
 
 load("./rdatas/non.cor.div.sel.Rdata")
 
@@ -30,7 +32,7 @@ theme(axis.text.x = element_text(angle = 45, hjust = 1),
       legend.background = element_rect(fill="transparent"),
       legend.title = element_text("")) +
 scale_colour_discrete(name = "")
-ggsave("~/lg_auto.png", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_auto.png", width= 15, height = 15, units =  "cm", dpi = 600)
 
 avg.ratio = AVGRatioPlot(non.cor.div.sel)
 avg.ratio = avg.ratio  + theme_bw() +
@@ -38,17 +40,17 @@ theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust =
   theme(legend.position = c(1, 0),
         legend.justification = c(1, 0),
         legend.background = element_rect(colour = "black"))
-ggsave("~/lg_avgratio.png", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_avgratio.png", width= 15, height = 15, units =  "cm", dpi = 600)
 
-eigen.var = LastGenMultiStatMultiPlot(non.cor.div.sel, function(x) EigenVar(x, 10), "Eigenvalues (% variation)")
+eigen.var = LastGenMultiStatMultiPlot(non.cor.div.sel, function(x) 100*EigenVar(x, 10), "Eigenvalues (% variation)")
 eigen.var= eigen.var + theme_bw() +
 theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
   #theme(legend.position = c(1, 0),
         #legend.justification = c(1, 0),
         #legend.background = element_rect(colour = "black"))
-ggsave("~/lg_eigen_var.png", width= 8.7, height = 10, units =  "cm", dpi = 600)
+ggsave("~/lg_eigen_var.png", width= 15, height = 15, units =  "cm", dpi = 600)
 
-png("~/divergent_plot.png", height = 7, width = 17.8, units="cm", res = 600)
+tiff("~/divergent_plot.tiff", height = 10, width = 25.4, units="cm", res = 600)
 divergent_plot = grid.arrange(avg.ratio, eigen.var, auto, ncol = 3)
 dev.off()
 
@@ -90,7 +92,7 @@ png("~/comparison_plot.png", height = 17, width = 14, units="cm", res = 600)
 comparison_plot = grid.arrange(corr.omega, corr.omega.RS, corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
 dev.off()
 
-png("~/small_comparison_plot.png", height = 10, width = 14, units="cm", res = 600)
+png("~/small_comparison_plot.png", height = 9, width = 18, units="cm", res = 600)
 comparison_plot = grid.arrange(corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
 dev.off()
 
