@@ -12,3 +12,15 @@ def read_pop(filename, nind, gen_size=1000, phen_size=10):
         ind += [(y, b)]
 
     return ind
+
+def calc_fitness(inds, omega, theta, amb):
+
+    fit_inds = np.zeros(len(inds))
+
+    for i, ind in enumerate(inds):
+        z = np.dot(ind[1], ind[0]) + np.random.normal(0, amb, ind[1].shape[0]).reshape((10,1))
+        delta_s = z - theta.reshape((10,1))
+        fit_inds[i] = np.exp(-np.dot(delta_s.T, np.linalg.solve(omega, delta_s)))
+
+    return fit_inds
+
