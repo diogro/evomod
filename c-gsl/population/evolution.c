@@ -78,12 +78,12 @@ void population_fitness (Population * pop)
         gsl_matrix * omega_cholesky = gsl_matrix_alloc (pop->p, pop->p);
         gsl_matrix_memcpy (omega_cholesky, pop->omega);
         gsl_linalg_cholesky_decomp (omega_cholesky);
-        #pragma omp parallel for
+//        #pragma omp parallel for
         for (ind = 0; ind < pop->n_e; ind++){
             total_fitness += fitness_ind (pop, ind, omega_cholesky);
         }
         if (total_fitness < 0.000000001){
-            #pragma omp parallel for
+//            #pragma omp parallel for
             for (ind = 0; ind < pop->n_e; ind++){
                 pop->fitness[ind] = 1.;  /*TODO: conferir essa parada...*/
             }
@@ -91,7 +91,7 @@ void population_fitness (Population * pop)
         gsl_matrix_free(omega_cholesky);
     }
     else{
-        #pragma omp parallel for
+//        #pragma omp parallel for
         for (ind = 0; ind < pop->n_e; ind++){
             pop->fitness[ind] = 1.;  /*TODO: conferir essa parada...*/
         }
@@ -164,7 +164,7 @@ void population_cross (const gsl_rng *r, Population * pop)
     choose_mates(r, pop, sires);
     choose_mates(r, pop, dames);
 
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for ( k = 0; k < pop->n_e; k++){
         cross_ind (r, pop->m, pop->p,
                    pop->y[sires[k]],  pop->b[sires[k]],
