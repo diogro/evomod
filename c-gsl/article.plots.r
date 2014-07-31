@@ -13,7 +13,7 @@ modules.corridor = modules.corridor + theme_bw() +
   theme(legend.position = c(0, 1),
         legend.justification = c(0, 1),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/lg_avg_corridor.tiff", width= 15, height = 15, units =  "cm", dpi = 600)
+ggsave("~/lg_avg_corridor.tiff", width= 15, height = 12, units =  "cm", dpi = 600)
 
 load("./rdatas/non.cor.div.sel.Rdata")
 
