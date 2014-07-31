@@ -11,7 +11,8 @@ c-gsl/input/
 *rdata
 *Rdata
 *rhistory
-c-gsl/.ipynb_checkpoints/
+.ipynb_checkpoints/
+*pyc
 # Object files
 *.o
 
