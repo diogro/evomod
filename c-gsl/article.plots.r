@@ -174,14 +174,25 @@ burn.in.plot = burn.in.avg + theme_bw() +
         legend.background = element_rect(fill="transparent"))
 ggsave("~/burnin_p_avg_corr.png", width= 18, height = 9, units =  "cm", dpi = 600)
 
-selected_number = read.csv("../py/diff_selection.csv")
+selected_number = read.csv("../py/notebooks/diff_selection.csv")
 names(selected_number)[1] = 'omega_var'
 selected_number$omega_var = selected_number$omega_var + 1
 m_selected = melt(selected_number, id.var = 'omega_var')
 names(m_selected)
-ggplot(m_selected, aes(omega_var, value, group = omega_var)) + geom_boxplot() +
+num_selected = ggplot(m_selected, aes(omega_var, value, group = omega_var)) + geom_boxplot() +
 geom_vline(aes(xintercept = 10), color = "black") + theme_bw() + labs(y = "Number of reproducing individuals", x = expression(paste(V[omega])))
 ggsave("~/num_ind_surv.png", width= 20, height = 15, units =  "cm", dpi = 600)
+
+fitness_variance = read.csv("../py/notebooks/diff_selection_var.csv")
+m_fit = melt(fitness_variance)
+m_fit$omega_var = rep(1:100, each = 10)
+var_fitness = ggplot(filter(m_fit, omega_var != 1), aes(omega_var, value, group = omega_var)) + geom_boxplot() +
+geom_vline(aes(xintercept = 10), color = "black") + theme_bw() + labs(y = "Variance of individual fitness", x = expression(paste(V[omega])))
+ggsave("~/var_ind_fitness.png", width= 20, height = 15, units =  "cm", dpi = 600)
+
+png("~/fitness_omega_scan.png", height = 15, width = 30, units="cm", res = 600)
+comparison_plot = grid.arrange(num_selected, var_fitness, ncol = 2)
+dev.off()
 
 library(mvtnorm)
 library(cpcbp)
