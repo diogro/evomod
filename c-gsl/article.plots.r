@@ -174,6 +174,15 @@ burn.in.plot = burn.in.avg + theme_bw() +
         legend.background = element_rect(fill="transparent"))
 ggsave("~/burnin_p_avg_corr.png", width= 18, height = 9, units =  "cm", dpi = 600)
 
+selected_number = read.csv("../py/diff_selection.csv")
+names(selected_number)[1] = 'omega_var'
+selected_number$omega_var = selected_number$omega_var + 1
+m_selected = melt(selected_number, id.var = 'omega_var')
+names(m_selected)
+ggplot(m_selected, aes(omega_var, value, group = omega_var)) + geom_boxplot() +
+geom_vline(aes(xintercept = 10), color = "black") + theme_bw() + labs(y = "Number of reproducing individuals", x = expression(paste(V[omega])))
+ggsave("~/num_ind_surv.png", width= 20, height = 15, units =  "cm", dpi = 600)
+
 library(mvtnorm)
 library(cpcbp)
 omega = as.matrix(read.table("~/projects/evomod/c-gsl/input/omega.csv"))
@@ -202,3 +211,5 @@ pop_mat_omega_2= t(eigen_omega$vectors) %*% cov_mat_2 %*% eigen_omega$vectors
 
 plot(ellipse((pop_mat_omega_2[1:2, 1:2])), col = 'red')
 points(ellipse((pop_mat_omega_1[1:2, 1:2])))
+
+
