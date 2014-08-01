@@ -100,58 +100,8 @@ png("~/subspace_plot.png", height = 7, width = 10, units="cm", res = 600)
 subspace_plot = grid.arrange(corr.omega.Krz, corr.omega.eigenvector, ncol = 2)
 dev.off()
 
-
-#r2 = StatMultiPlot(main.data.div.sel, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~/ts.r2.png")
-#flex = StatMultiPlot(main.data.div.sel, CalcIsoFlex, "Directional Flexibility") + theme_bw()
-#ggsave("~/ts.flex.png")
-#evol = StatMultiPlot(main.data.div.sel, CalcIsoEvol, "Directional Evolvability") + theme_bw()
-#ggsave("~/ts.evol.png")
-#auto = StatMultiPlot(main.data.div.sel, CalcIsoAuto, "Directional Autonomy") + theme_bw()
-#ggsave("~/ts.auto.png")
-#avg.ratio = StatMultiPlot(main.data.div.sel, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~/ts.avgratio.png")
-#corr.omega = StatMultiPlot(main.data.div.sel, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~/ts.corr.omega.png")
-
 load("./rdatas/non.cor.stabilizing.Rdata")
-#stab.corr.omega = NoSelStatMultiPlot(main.data.stabilizing, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~.pngs/ts.stab.corr.omega.png")
-#stab.r2 = NoSelStatMultiPlot(main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~.pngs/ts.stab.r2.png")
-#stab.flex = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
-#ggsave("~.pngs/ts.stab.flex.png")
-#stab.evol = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
-#ggsave("~.pngs/ts.stab.evol.png")
-#stab.auto = NoSelStatMultiPlot(main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
-#ggsave("~.pngs/ts.stab.auto.png")
-#stab.avg.ratio = NoSelStatMultiPlot(main.data.stabilizing, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~.pngs/ts.stab.avgratio.png")
-
 load("./rdatas/non.cor.drift.Rdata")
-#drift.corr.omega = NoSelStatMultiPlot(main.data.drift, CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~.pngs/ts.drift.corr.omega.png")
-#drift.r2 = NoSelStatMultiPlot(main.data.drift, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~.pngs/ts.drift.r2.png")
-#drift.flex = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
-#ggsave("~.pngs/ts.drift.flex.png")
-#drift.evol = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
-#ggsave("~.pngs/ts.drift.evol.png")
-#drift.auto = NoSelStatMultiPlot(main.data.drift, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
-#ggsave("~.pngs/ts.drift.auto.png")
-#drift.avg.ratio = NoSelStatMultiPlot(main.data.drift, CalcAVGRatio, "AVGRatio") + theme_bw()
-#ggsave("~.pngs/ts.drift.avgratio.png")
-
-#drift.stab.corr.omega = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing , CalcCorrOmega, "Fitness Surface Correlation") + theme_bw()
-#ggsave("~.pngs/ts.drift.stab.corr.omega.png")
-#drift.stab.r2 = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, MapCalcR2, "Mean Squared Correlations") + theme_bw()
-#ggsave("~.pngs/ts.drift.stab.r2.png")
-#drift.stab.flex = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Flexibility), "Directional Flexibility") + theme_bw()
-#ggsave("~.pngs/ts.drift.stab.flex.png")
-#drift.stab.evol = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Evolvability), "Directional Evolvability") + theme_bw()
-#ggsave("~.pngs/ts.drift.stab.evol.png")
-#drift.stab.auto = NoSelStatMultiPlotMultiPop(main.data.drift, main.data.stabilizing, function(mat.list) CalcIsoStat(mat.list, Autonomy), "Directional Autonomy") + theme_bw()
-#ggsave("~.pngs/ts.drift.stab.auto.png")
 
 drift.stab.avg.ratio = NoSelStatMultiPlotMultiPop(non.cor.drift, non.cor.stabilizing, AVGRatioSimple, "AVGRatio")
 drift.stab.avg.ratio.plot = drift.stab.avg.ratio + theme_bw() +
@@ -190,12 +140,12 @@ gvar_omega = rbind(m.gvar_omega1, m.gvar_omega10, m.gvar_omega100)
 gvar_omega$omega = as.factor(gvar_omega$omega)
 burn.in.avg = ggplot(gvar_omega, aes(as.numeric(.id), value, group = omega, color = omega)) + geom_point()
 burn.in.plot = burn.in.avg + theme_bw() +
-  annotate("text", x = 10000,
-                y = 0.09, label = "Uncorrelated Stabilizing\n Selection", angle=0, size=3,
+  annotate("text", x = 12500,
+                y = 0.1, label = "Uncorrelated Stabilizing\n Selection", angle=0, size=3,
                 colour='black', face="bold") +
     labs(x = 'Generations', y = 'Heritabilities') +
     scale_colour_discrete(name = expression(paste(V[omega]))) +
- geom_vline(aes(xintercept = 10000), color = "black") +_
+ geom_vline(aes(xintercept = 10000), color = "black") +
   theme(legend.position = c(0, 1),
         legend.justification = c(0, 1),
         legend.background = element_rect(fill="transparent"))
@@ -207,14 +157,27 @@ selected_number$omega_var = selected_number$omega_var + 1
 m_selected = melt(selected_number, id.var = 'omega_var')
 names(m_selected)
 num_selected = ggplot(m_selected, aes(omega_var, value, group = omega_var)) + geom_boxplot() +
-geom_vline(aes(xintercept = 10), color = "black") + theme_bw() + labs(y = "Number of reproducing individuals", x = expression(paste(V[omega])))
+geom_vline(aes(xintercept = 10), color = "black") + theme_bw() +
+labs(y = "Number of reproducing individuals", x = expression(paste(V[omega])))
 ggsave("~/num_ind_surv.png", width= 20, height = 15, units =  "cm", dpi = 600)
 
-fitness_variance = read.csv("../py/notebooks/diff_selection_var.csv")
-m_fit = melt(fitness_variance)
-m_fit$omega_var = rep(1:100, each = 10)
-var_fitness = ggplot(filter(m_fit, omega_var != 1), aes(omega_var, value, group = omega_var)) + geom_boxplot() +
-geom_vline(aes(xintercept = 10), color = "black") + theme_bw() + labs(y = "Variance of individual fitness", x = expression(paste(V[omega])))
+fitness_variance_1   = read.csv("../py/notebooks/diff_selection_var_1.csv")
+fitness_variance_10  = read.csv("../py/notebooks/diff_selection_var.csv")
+fitness_variance_100 = read.csv("../py/notebooks/diff_selection_var_100.csv")
+m_fit_1   = melt(fitness_variance_1  )
+m_fit_10  = melt(fitness_variance_10 )
+m_fit_100 = melt(fitness_variance_100)
+m_fit_1$omega   = 1
+m_fit_10$omega  = 10
+m_fit_100$omega = 100
+m_fit_1$omega_var   = rep(1:100, each = 10)
+m_fit_10$omega_var  = rep(1:100, each = 10)
+m_fit_100$omega_var = rep(1:100, each = 10)
+m_fit = rbind(m_fit_1, m_fit_10, m_fit_100)
+m_fit$omega = as.factor(m_fit$omega)
+var_fitness = ggplot(filter(m_fit, omega_var != 1), aes(omega_var, value, group = interaction(omega_var, omega), color = omega)) + geom_boxplot() +
+geom_vline(aes(xintercept = 10), color = "black") + theme_bw() +
+labs(y = "Variance of individual fitness", x = expression(paste(V[omega])))
 ggsave("~/var_ind_fitness.png", width= 20, height = 15, units =  "cm", dpi = 600)
 
 png("~/fitness_omega_scan.png", height = 15, width = 30, units="cm", res = 600)
