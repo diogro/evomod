@@ -45,4 +45,8 @@ ne.plot = NeFacetPlot(m.avg)
 ggsave("~/n_e.facet.plot.tiff", width= 16, units = "cm", dpi = 600)
 
 load("./rdatas/mu_b.Rdata")
-mu.plot = AVGRatioPlot(main.data.mu.b, T, 4, 'mu.ratio', "Mutation rate ratio"
+mu.plot = AVGRatioPlot(main.data.mu.b, T, 4, 'mu.ratio', "Mutation rate ratio")
+mu.plot = mu.plot + theme(legend.position = c(0, 1),
+        legend.justification = c(0, 1),
+        legend.background = element_rect(fill="transparent"))
+ggsave("~/mu_ratio_plot.png", width= 22, height = 9, units =  "cm", dpi = 600)

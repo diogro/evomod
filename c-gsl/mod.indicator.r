@@ -3,8 +3,6 @@ library(ggplot2)
 library(reshape2)
 library(EvomodR)
 
-#non.cor.div.sel = ReadPattern(pattern = "DivSel-Rep", sel.type = "Divergent")
-#save(non.cor.div.sel, file="./rdatas/non.cor.div.sel.Rdata")
 #main.data.div.sel = ReadPattern()
 #save(main.data.div.sel, file="./rdatas/div.sel.Rdata")
 #non.cor.corridor = ReadPattern("Corridor", sel.type = "corridor")
