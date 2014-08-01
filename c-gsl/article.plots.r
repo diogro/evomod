@@ -174,6 +174,33 @@ burn.in.plot = burn.in.avg + theme_bw() +
         legend.background = element_rect(fill="transparent"))
 ggsave("~/burnin_p_avg_corr.png", width= 18, height = 9, units =  "cm", dpi = 600)
 
+burn.in.omega.1 = ReadFolder("burn_in_omega_1", sel.type = "burn.in", direct.sel=F)
+burn.in.omega.10 = ReadFolder("burn_in", sel.type = "burn.in", direct.sel=F)
+burn.in.omega.100 = ReadFolder("burn_in_omega_100", sel.type = "burn.in", direct.sel=F)
+gvar_omega1 = ldply(burn.in.omega.1$h.var)
+gvar_omega10 = ldply(burn.in.omega.10$h.var)
+gvar_omega100 = ldply(burn.in.omega.100$h.var)
+m.gvar_omega1 = melt(gvar_omega1)
+m.gvar_omega1$omega = 1
+m.gvar_omega10 = melt(gvar_omega10)
+m.gvar_omega10$omega = 10
+m.gvar_omega100 = melt(gvar_omega100)
+m.gvar_omega100$omega = 100
+gvar_omega = rbind(m.gvar_omega1, m.gvar_omega10, m.gvar_omega100)
+gvar_omega$omega = as.factor(gvar_omega$omega)
+burn.in.avg = ggplot(gvar_omega, aes(as.numeric(.id), value, group = omega, color = omega)) + geom_point()
+burn.in.plot = burn.in.avg + theme_bw() +
+  annotate("text", x = 10000,
+                y = 0.09, label = "Uncorrelated Stabilizing\n Selection", angle=0, size=3,
+                colour='black', face="bold") +
+    labs(x = 'Generations', y = 'Heritabilities') +
+    scale_colour_discrete(name = expression(paste(V[omega]))) +
+ geom_vline(aes(xintercept = 10000), color = "black") +_
+  theme(legend.position = c(0, 1),
+        legend.justification = c(0, 1),
+        legend.background = element_rect(fill="transparent"))
+ggsave("~/burnin_h_var.png", width= 18, height = 9, units =  "cm", dpi = 600)
+
 selected_number = read.csv("../py/notebooks/diff_selection.csv")
 names(selected_number)[1] = 'omega_var'
 selected_number$omega_var = selected_number$omega_var + 1
