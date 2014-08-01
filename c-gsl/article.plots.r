@@ -156,28 +156,51 @@ names(selected_number)[1] = 'omega_var'
 selected_number$omega_var = selected_number$omega_var + 1
 m_selected = melt(selected_number, id.var = 'omega_var')
 names(m_selected)
-num_selected = ggplot(m_selected, aes(omega_var, value, group = omega_var)) + geom_boxplot() +
+
+selected_number_1   = read.csv("../py/notebooks/diff_selection_1.csv")
+selected_number_10  = read.csv("../py/notebooks/diff_selection_10.csv")
+selected_number_100 = read.csv("../py/notebooks/diff_selection_100.csv")
+m_selected_1   = melt(selected_number_1  )[-c(1:10),]
+m_selected_10  = melt(selected_number_10 )[-c(1:10),]
+m_selected_100 = melt(selected_number_100)[-c(1:10),]
+m_selected_1$omega   = 1
+m_selected_10$omega  = 10
+m_selected_100$omega = 100
+m_selected_1$omega_var   = rep(1:99, each = 10)
+m_selected_10$omega_var  = rep(1:99, each = 10)
+m_selected_100$omega_var = rep(1:99, each = 10)
+m_selected = rbind(m_selected_1, m_selected_10, m_selected_100)
+m_selected$omega = as.factor(m_selected$omega)
+num_selected = ggplot(m_selected, aes(omega_var, value, group = interaction(omega,omega_var), color = omega)) + layer(geom = "boxplot") +
 geom_vline(aes(xintercept = 10), color = "black") + theme_bw() +
+scale_colour_discrete(name = expression(paste('Equilibrium ',V[omega]))) +
+  theme(legend.position = c(1, 0),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(fill="transparent")) +
 labs(y = "Number of reproducing individuals", x = expression(paste(V[omega])))
 ggsave("~/num_ind_surv.png", width= 20, height = 15, units =  "cm", dpi = 600)
 
 fitness_variance_1   = read.csv("../py/notebooks/diff_selection_var_1.csv")
 fitness_variance_10  = read.csv("../py/notebooks/diff_selection_var.csv")
 fitness_variance_100 = read.csv("../py/notebooks/diff_selection_var_100.csv")
-m_fit_1   = melt(fitness_variance_1  )
-m_fit_10  = melt(fitness_variance_10 )
-m_fit_100 = melt(fitness_variance_100)
+m_fit_1   = melt(fitness_variance_1  )[-c(1:10),]
+m_fit_10  = melt(fitness_variance_10 )[-c(1:10),]
+m_fit_100 = melt(fitness_variance_100)[-c(1:10),]
 m_fit_1$omega   = 1
 m_fit_10$omega  = 10
 m_fit_100$omega = 100
-m_fit_1$omega_var   = rep(1:100, each = 10)
-m_fit_10$omega_var  = rep(1:100, each = 10)
-m_fit_100$omega_var = rep(1:100, each = 10)
+m_fit_1$omega_var   = rep(1:99, each = 10)
+m_fit_10$omega_var  = rep(1:99, each = 10)
+m_fit_100$omega_var = rep(1:99, each = 10)
 m_fit = rbind(m_fit_1, m_fit_10, m_fit_100)
 m_fit$omega = as.factor(m_fit$omega)
-var_fitness = ggplot(filter(m_fit, omega_var != 1), aes(omega_var, value, group = interaction(omega_var, omega), color = omega)) + geom_boxplot() +
+var_fitness = ggplot(m_fit, aes(omega_var, value, group = interaction(omega, omega_var), color = omega)) + layer(geom = "boxplot") +
 geom_vline(aes(xintercept = 10), color = "black") + theme_bw() +
-labs(y = "Variance of individual fitness", x = expression(paste(V[omega])))
+labs(y = "Variance of individual fitness", x = expression(paste(V[omega]))) +
+scale_colour_discrete(name = expression(paste('Equilibrium ',V[omega]))) +
+  theme(legend.position = c(1, 1),
+        legend.justification = c(1, 1),
+        legend.background = element_rect(fill="transparent"))
 ggsave("~/var_ind_fitness.png", width= 20, height = 15, units =  "cm", dpi = 600)
 
 png("~/fitness_omega_scan.png", height = 15, width = 30, units="cm", res = 600)
