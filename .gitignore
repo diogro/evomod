@@ -31,4 +31,5 @@ c-gsl/input/
 *.out
 *.app
 .Rproj.user
+.Rhistory
 *.Rproj
