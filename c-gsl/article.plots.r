@@ -138,13 +138,15 @@ m.gvar_omega100 = melt(gvar_omega100)
 m.gvar_omega100$omega = 100
 gvar_omega = rbind(m.gvar_omega1, m.gvar_omega10, m.gvar_omega100)
 gvar_omega$omega = as.factor(gvar_omega$omega)
-burn.in.avg = ggplot(gvar_omega, aes(as.numeric(.id), value, group = omega, color = omega)) + geom_point()
+
+burn.in.avg = ggplot(gvar_omega, aes(as.numeric(.id), value, group = omega)) + geom_point(aes(shape = omega, color = omega))
 burn.in.plot = burn.in.avg + theme_bw() +
   annotate("text", x = 12500,
                 y = 0.1, label = "Uncorrelated Stabilizing\n Selection", angle=0, size=3,
                 colour='black', face="bold") +
     labs(x = 'Generations', y = 'Heritabilities') +
     scale_colour_discrete(name = expression(paste(V[omega]))) +
+    scale_shape_discrete(name = expression(paste(V[omega])), solid = FALSE) +
  geom_vline(aes(xintercept = 10000), color = "black") +
   theme(legend.position = c(0, 1),
         legend.justification = c(0, 1),
