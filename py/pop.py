@@ -85,7 +85,7 @@ class Individual:
         y[self.elocus] = ind_1['y'][self.elocus + alele[self.elocus]]
         y[self.olocus] = ind_2['y'][self.elocus + alele[self.olocus]]
         b[:, self.elocus] = ind_1['b'][:, self.elocus + alele[self.elocus]]
-        b[:, self.olocus] = ind_2['b'][:, self.olocus + alele[self.olocus]]
+        b[:, self.olocus] = ind_2['b'][:, self.elocus + alele[self.olocus]]
 
 #        for locus in xrange(self.m):
 #            y[2 * locus] = ind_1['y'][2 * locus + alele[2 * locus]]
