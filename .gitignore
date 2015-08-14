@@ -6,8 +6,11 @@ py/lib
 py/local
 py/share
 test.random.c
-c-gsl/output/
-c-gsl/input/
+c-gsl/output/*
+c-gsl/input/*
+c-gsl/output
+c-gsl/input
+c-gsl/rdatas
 *rdata
 *Rdata
 *rhistory
