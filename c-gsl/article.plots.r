@@ -22,7 +22,12 @@ modules.div = modules.div + theme_bw() +
   theme(legend.position = c(0, 0),
         legend.justification = c(0, 0),
         legend.background = element_rect(fill="transparent"))
-ggsave("~/lg_avg_div.png", width= 18, height = 9, units =  "cm", dpi = 600)
+ggsave("~/lg_avg_div.png", width= 15, height = 12, units =  "cm", dpi = 600)
+
+tiff("~/modules_plot.tiff", height = 12, width = 30, units="cm", res = 600)
+grid.arrange(modules.div, modules.corridor, ncol = 2)
+dev.off()
+
 
 auto = LastGenStatMultiPlotWithMean(non.cor.div.sel, Autonomy, "Autonomy")
 auto = auto + theme_bw() +
