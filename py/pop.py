@@ -1,5 +1,9 @@
-#! /usr/bin/env python
-"""Usage: ./pop.py [options]
+#!/usr/bin/env python3
+"""Individual-based simulation of the evolution of modularity.
+
+Python port of the C model in ../c-gsl (Melo & Marroig 2015, PNAS).
+
+Usage: pop.py [options]
 
 Options:
    -h --help              show this
@@ -9,204 +13,130 @@ Options:
    -b mu_b                ontogenetic mutation rate [default: 1e-4]
    -n ne                  population size [default: 2500]
    -s sigma               mutation size [default: 0.2]
-   -e amb                 enviromental noise [default: 0.8]
-   -v omega_var           selection variance [default: 1.0]
-   -o omega_mat           selection correlation matrix [default: input/omega.csv]
+   -e amb                 enviromental noise (standard deviation) [default: 0.8]
+   -v omega_var           selection variance, used when no -o matrix is given [default: 1.0]
+   -o omega_mat           selection covariance matrix file [default: none]
    -t time                number of generations [default: 1]
    -d delta_S             change in optimal per generation [default: 0.0]
+   -r seed                random seed [default: none]
 """
 
-import numpy as np
 import os
-import errno
-import multiprocessing as mp
-import functools as f
-#import matplotlib.pylab as mpl
+
+import numpy as np
 from docopt import docopt
 
-cores = 10
 
 class Individual:
-    """class for Individuals in a Population"""
-    def __init__(self, m, p, amb, mu, mu_b, sigma):
+    """Parameters and operations shared by all Individuals in a Population.
+
+    An individual is a dict with
+      y: allelic effects, length 2m (alleles 2k and 2k+1 belong to locus k)
+      b: binary ontogenetic matrix, p x 2m
+      x: additive values, b . y
+      z: phenotype, x + environmental noise
+    """
+
+    def __init__(self, m, p, amb, mu, mu_b, sigma, rng):
         self.m = m                # number of loci
         self.p = p                # number of traits
         self.amb = amb            # environmental noise
         self.mu = mu              # genetic effects mutation rate
         self.mu_b = mu_b          # ontogenetic effects mutation rate
-        self.sigma = sigma        # genetic mutation variance
-        self.elocus = np.array(range(0, 2*self.m, 2))
-        self.olocus = np.array(range(1, 2*self.m + 1, 2))
+        self.sigma = sigma        # genetic mutation standard deviation
+        self.rng = rng
+        self.elocus = np.arange(0, 2 * self.m, 2)
+        self.olocus = np.arange(1, 2 * self.m, 2)
+
+    def phenotype(self, b, y):
+        x = b @ y                                            # additive effects
+        z = x + self.rng.normal(0, self.amb, self.p)         # phenotype
+        return {'y': y, 'x': x, 'z': z, 'b': b}
 
     def generate(self):
         """creates an ind with Individual parameters"""
-        b = np.concatenate((np.ones(self.m * self.p),   # binary ontogenetic
-                           np.zeros(self.m * self.p)))  # matrix
-        np.random.shuffle(b)
+        b = np.concatenate((np.ones(self.m * self.p),        # binary ontogenetic
+                            np.zeros(self.m * self.p)))      # matrix
+        self.rng.shuffle(b)
         b = b.reshape((self.p, 2 * self.m))
-        y = np.random.normal(0, self.sigma, size=2 * self.m)  # gene vector
-        x = np.dot(b, y)                       # additive effects vector
-        z = x + np.random.normal(0, self.amb,
-                                 self.p)       # phenotipic values vector
-        return {'y': y, 'x': x, 'z': z, 'b': b}
+        y = self.rng.normal(0, self.sigma, size=2 * self.m)  # gene vector
+        return self.phenotype(b, y)
 
     def mutate(self, ind):
-        """Mutates an ind with Individual parameters"""
-        mutation_number_y = np.random.binomial(2 * self.m, self.mu)
-        if (mutation_number_y > 0):
-            mutation_vector = np.concatenate((
-                np.random.normal(0, self.sigma, size=mutation_number_y),
-                np.zeros(2 * self.m - mutation_number_y)))
-            np.random.shuffle(mutation_vector)
-            ind['y'] = ind['y'] + mutation_vector
-        mutation_number_b = np.random.binomial(2 * self.m * self.p,
-                                               self.mu_b)
-        if (mutation_number_b > 0):
-            mutation_mask = np.concatenate((
-                np.ones(mutation_number_b),
-                np.zeros(2 * self.m * self.p - mutation_number_b)))
-            np.random.shuffle(mutation_mask)
-            mutation_mask = mutation_mask.reshape((self.p, 2 * self.m))
-            ind['b'] = (ind['b'] + mutation_mask) % 2
+        """Mutates an ind in place (x and z are recomputed at crossing)"""
+        n_y = self.rng.binomial(2 * self.m, self.mu)
+        if n_y > 0:
+            pos = self.rng.choice(2 * self.m, n_y, replace=False)
+            ind['y'] = ind['y'].copy()
+            ind['y'][pos] += self.rng.normal(0, self.sigma, size=n_y)
+        n_b = self.rng.binomial(2 * self.m * self.p, self.mu_b)
+        if n_b > 0:
+            pos = self.rng.choice(2 * self.m * self.p, n_b, replace=False)
+            b = ind['b'].copy().ravel()
+            b[pos] = 1 - b[pos]
+            ind['b'] = b.reshape((self.p, 2 * self.m))
         return ind
-
-    def fitness(self, ind, omega, teta):
-        """calculates ind fitness from population"""
-        delta_s = ind['z'] - teta
-        return np.exp(-0.5 * np.dot(delta_s, np.linalg.solve(omega, delta_s)))
 
     def cross(self, ind_1, ind_2):
         """Generates a new individual by crossing ind_1 and ind_2"""
-        b = np.zeros((self.p, 2 * self.m),
-                     dtype=float)              # binary ontogenetic matrix
-        y = np.zeros(2 * self.m, dtype=float)  # gene vector
-        alele = np.random.randint(0, 2, size=2 * self.m)
+        b = np.zeros((self.p, 2 * self.m))                   # binary ontogenetic matrix
+        y = np.zeros(2 * self.m)                             # gene vector
+        alele = self.rng.integers(0, 2, size=2 * self.m)
 
         y[self.elocus] = ind_1['y'][self.elocus + alele[self.elocus]]
         y[self.olocus] = ind_2['y'][self.elocus + alele[self.olocus]]
         b[:, self.elocus] = ind_1['b'][:, self.elocus + alele[self.elocus]]
         b[:, self.olocus] = ind_2['b'][:, self.elocus + alele[self.olocus]]
-
-#        for locus in xrange(self.m):
-#            y[2 * locus] = ind_1['y'][2 * locus + alele[2 * locus]]
-#            y[2 * locus + 1] = ind_2['y'][2 * locus + alele[2 * locus + 1]]
-#            b[:, 2 * locus] = ind_1['b'][:, 2 * locus + alele[2 * locus]]
-#            b[:, 2 * locus + 1] = ind_2['b'][:, 2 * locus + alele[2 * locus + 1]]
-        x = np.dot(b, y)                       # additive effects vector
-        z = x + np.random.normal(0, self.amb,
-                                 self.p)       # phenotipic values vector
-        return {'y': y, 'x': x, 'z': z, 'b': b}
-
-
-def mut(p, lp, o):
-    o.put(map(lambda i: p.indmod.mutate(p.pop[i]), lp))
-    return
-
-def fit(p, lp, o):
-    fitness = map(lambda i: p.indmod.fitness(p.pop[i],
-                               p.omega,
-                               p.teta), lp)
-    for i in xrange(len(fitness)):
-        if (np.isnan(fitness[i]) or np.isinf(fitness[i])):
-          fitness[i] = 0.0
-    o.put(fitness)
-
-
-def cross(p, lc, o):
-    o.put(map(lambda c: p.indmod.cross(p.pop[c[0]], p.pop[c[1]]), lc))
+        return self.phenotype(b, y)
 
 
 class Population:
     """class for population of Individuals"""
-    def __init__(self, n_e, teta, delta_s, omega, indmod):
+
+    def __init__(self, n_e, teta, delta_s, omega, indmod, out_dir='./dats/'):
         self.indmod = indmod
+        self.rng = indmod.rng
         self.n_e = n_e
-        self.teta = teta
+        self.teta = np.array(teta, dtype=float)
         self.omega = omega
         self.current_gen = 0
-        self.modules = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
-        self.pop = [indmod.generate() for k in xrange(n_e)]
+        half = indmod.p // 2
+        self.modules = [list(range(half)), list(range(half, indmod.p))]
+        self.pop = [indmod.generate() for _ in range(n_e)]
         self.fitness = np.ones(n_e) / n_e
-        self.pop_name = ('./dats/Ne.' + str(n_e) + '-mp.' + str(indmod.m) + '_'
-                         + str(indmod.p) + '-mu_muB.' + str(indmod.mu) + '_'
-                         + str(indmod.mu_b) + '-Delta_S.' + str(delta_s))
+        self.pop_name = os.path.join(
+            out_dir,
+            'Ne.' + str(n_e) + '-mp.' + str(indmod.m) + '_' + str(indmod.p)
+            + '-mu_muB.' + str(indmod.mu) + '_' + str(indmod.mu_b)
+            + '-Delta_S.' + str(delta_s))
+        os.makedirs(out_dir, exist_ok=True)
         self.out_files = self.set_outfile()
 
     def mutate(self):
         """mutates every individual of population"""
         self.pop = [self.indmod.mutate(ind) for ind in self.pop]
 
-    def pupdate_fitness(self):
-        out = mp.Queue()
-        chunk = self.n_e/cores
-        procs = []
-        fitp = []
-
-        for i in range(cores):
-            procs.append(pool.Process(target=f.partial(fit, self),
-                args=(range(i*chunk, (i+1)*chunk), out)))
-            procs[-1].start()
-            procs[-1].join()
-        for i in range(cores):
-            fitp += out.get()
-
-        self.fitness = np.array(fitp)
-        fitness_total = self.fitness.sum()
-        if (fitness_total == 0.0):
-            self.fitness = np.ones(self.n_e) / self.n_e
-        else:
-            self.fitness /= fitness_total
-
     def update_fitness(self):
-        """calculates the fitness of every individual of population"""
-        #TODO Obviously parallel
-        for k in xrange(self.n_e):
-            self.fitness[k] = self.indmod.fitness(self.pop[k],
-                                                  self.omega,
-                                                  self.teta)
-            if (np.isnan(self.fitness[k]) or np.isinf(self.fitness[k])):
-                self.fitness[k] = 0.0
-        fitness_total = self.fitness.sum()
-        if (fitness_total == 0.0):
+        """Gaussian fitness, w = exp(-1/2 (z - theta)' Omega^-1 (z - theta)),
+        normalised to sum to one"""
+        dz = np.array([ind['z'] for ind in self.pop]) - self.teta
+        fitness = np.exp(-0.5 * np.einsum('ij,ji->i', dz, np.linalg.solve(self.omega, dz.T)))
+        fitness[~np.isfinite(fitness)] = 0.0
+        total = fitness.sum()
+        if total == 0.0:
             self.fitness = np.ones(self.n_e) / self.n_e
         else:
-            self.fitness /= fitness_total
-
-    def crossp(self, pairs):
-        out = mp.Queue()
-        chunk = len(pairs)/cores
-        procs = []
-        pop = []
-
-        for i in range(cores):
-            procs.append(pool.Process(target=f.partial(cross, self),
-                args=(pairs[i*chunk:(i+1)*chunk], out)))
-            procs[-1].start()
-            procs[-1].join()
-        for i in range(cores):
-            pop += out.get()
-
-        return pop
+            self.fitness = fitness / total
 
     def next_generation(self, delta_s):
         """creates next generation by mutating then crossing with probability
         proportional do fitness"""
-        print "MUTA"
-        self.mutate()
-        print "FIT"
         self.update_fitness()
-        sires = np.random.choice(self.n_e, size=self.n_e,
-                                 p=self.fitness, replace=True)
-        dames = np.random.choice(self.n_e, size=self.n_e,
-                                 p=self.fitness, replace=True)
-
-        pairs = zip(sires, dames)
-        new_pop = []
-        for k in xrange(self.n_e):
-            new_pop.append(self.indmod.cross(self.pop[sires[k]],
-                                             self.pop[dames[k]]))
-        self.pop = new_pop
-
+        self.mutate()
+        sires = self.rng.choice(self.n_e, size=self.n_e, p=self.fitness, replace=True)
+        dames = self.rng.choice(self.n_e, size=self.n_e, p=self.fitness, replace=True)
+        self.pop = [self.indmod.cross(self.pop[s], self.pop[d])
+                    for s, d in zip(sires, dames)]
         self.current_gen += 1
         self.teta += delta_s
 
@@ -217,28 +147,19 @@ class Population:
         xs = np.array([ind['x'] for ind in self.pop])
         ys = np.array([ind['y'] for ind in self.pop])
         bs = np.array([ind['b'] for ind in self.pop])
-        ymean = ys.mean(axis=0)
-        zmean = zs.mean(axis=0)
-        xmean = xs.mean(axis=0)
-        ymean = ys.mean(axis=0)
-        bmean = bs.mean(axis=0)
-        phenotipic = np.cov(zs, rowvar=0, bias=1)
-        genetic = np.cov(xs, rowvar=0, bias=1)
-        heridability = (genetic[np.diag_indices_from(genetic)] /
-                        phenotipic[np.diag_indices_from(phenotipic)])
-        corr_phenotipic = np.corrcoef(zs, rowvar=0, bias=1)
-        corr_genetic = np.corrcoef(xs, rowvar=0, bias=1)
-        avgP = avg_ratio(corr_phenotipic, self.modules)
-        avgG = avg_ratio(corr_genetic, self.modules)
-        return {'y.mean': ymean,
-                'b.mean': bmean,
-                'z.mean': zmean,
-                'x.mean': xmean,
+        phenotipic = np.cov(zs, rowvar=False, bias=True)
+        genetic = np.cov(xs, rowvar=False, bias=True)
+        corr_phenotipic = np.corrcoef(zs, rowvar=False)
+        corr_genetic = np.corrcoef(xs, rowvar=False)
+        return {'y.mean': ys.mean(axis=0),
+                'b.mean': bs.mean(axis=0),
+                'z.mean': zs.mean(axis=0),
+                'x.mean': xs.mean(axis=0),
                 'P': phenotipic,
                 'G': genetic,
-                'h2': heridability,
-                'avgP': avgP,
-                'avgG': avgG,
+                'h2': np.diag(genetic) / np.diag(phenotipic),
+                'avgP': avg_ratio(corr_phenotipic, self.modules),
+                'avgG': avg_ratio(corr_genetic, self.modules),
                 'corrP': corr_phenotipic,
                 'corrG': corr_genetic}
 
@@ -253,66 +174,44 @@ class Population:
         mat_print(mats['h2'], 'vector', self.out_files['varH'], gen)
         mat_print(mats['avgP'], 'vector', self.out_files['avgP'], gen)
         mat_print(mats['avgG'], 'vector', self.out_files['avgG'], gen)
-        mat_print(mats['h2'], 'vector', self.out_files['varH'], gen)
         mat_print(mats['y.mean'], 'vector', self.out_files['y.mean'], gen)
         mat_print(mats['z.mean'], 'vector', self.out_files['z.mean'], gen)
         mat_print(mats['x.mean'], 'vector', self.out_files['x.mean'], gen)
         mat_print(mats['b.mean'], 'total', self.out_files['b.mean'], gen)
 
     def set_outfile(self):
-        try:
-            os.makedirs('./dats/')
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise
-        varG = open(self.pop_name + '-varG.dat', "w")
-        varP = open(self.pop_name + '-varP.dat', "w")
-        varH = open(self.pop_name + '-varH.dat', "w")
-        corrP = open(self.pop_name + '-corrP.dat', "w")
-        corrG = open(self.pop_name + '-corrG.dat', "w")
-        avgP = open(self.pop_name + '-avgP.dat', "w")
-        avgG = open(self.pop_name + '-avgG.dat', "w")
-        z_traits = open(self.pop_name + '-traits_z.dat', "w")
-        y_traits = open(self.pop_name + '-traits_y.dat', "w")
-        x_traits = open(self.pop_name + '-traits_x.dat', "w")
-        b_matrix = open(self.pop_name + '-b.dat', "w")
-        teta = open(self.pop_name + '-teta.dat', "w")
-        return {'varG': varG,
-                'varP': varP,
-                'varH': varH,
-                'corrP': corrP,
-                'corrG': corrG,
-                'avgP': avgP,
-                'avgG': avgG,
-                'teta': teta,
-                'b.mean': b_matrix,
-                'z.mean': z_traits,
-                'y.mean': y_traits,
-                'x.mean': x_traits}
+        suffixes = {'varG': '-varG.dat',
+                    'varP': '-varP.dat',
+                    'varH': '-varH.dat',
+                    'corrP': '-corrP.dat',
+                    'corrG': '-corrG.dat',
+                    'avgP': '-avgP.dat',
+                    'avgG': '-avgG.dat',
+                    'teta': '-teta.dat',
+                    'b.mean': '-b.dat',
+                    'z.mean': '-traits_z.dat',
+                    'y.mean': '-traits_y.dat',
+                    'x.mean': '-traits_x.dat'}
+        return {k: open(self.pop_name + s, 'w') for k, s in suffixes.items()}
+
+    def close(self):
+        for f in self.out_files.values():
+            f.close()
 
 
 def mat_print(matrix, out_format, output, generation):
-    s = str(generation) + ' '
-    if (out_format == 'vector'):
-        n = len(matrix)
-        for i in xrange(n):
-                s += str(matrix[i]) + ' '
+    matrix = np.asarray(matrix)
+    if out_format == 'vector':
+        values = matrix
+    elif out_format == 'total':
+        values = matrix.ravel()
+    elif out_format == 'tri':
+        values = matrix[np.tril_indices_from(matrix, k=-1)]
+    elif out_format == 'diag':
+        values = np.diag(matrix)
     else:
-        n, m = matrix.shape
-
-    if (out_format == 'total'):
-        for i in xrange(n):
-            for j in xrange(m):
-                s += str(matrix[i, j]) + ' '
-    if (out_format == 'tri'):
-        for i in xrange(1, n):
-            for j in xrange(i):
-                s += str(matrix[i, j]) + ' '
-    if (out_format == 'diag'):
-        for i in xrange(n):
-                s += str(matrix[i, i]) + ' '
-    s += '\n'
-    output.write(s)
+        raise ValueError(out_format)
+    output.write(str(generation) + ' ' + ''.join(str(v) + ' ' for v in values) + '\n')
     output.flush()
 
 
@@ -331,34 +230,40 @@ def avg_ratio(matrix, modules):
                     mask[i, j] = -17  # any negative integer
                 else:
                     mask[i, j] = k
-    for module in xrange(k + 1):
+    for module in range(k + 1):
         avgs.append(matrix[mask == module].mean())
     # avg ratio, avg+, avg-, avg by module
     return [np.mean(avgs[1:]) / avgs[0]] + [np.mean(avgs[1:])] + avgs
 
 
-pool = mp.Pool(cores)
-
 def main(options):
-    teta_init = np.zeros(int(options['-p']))
-    delta_teta = np.ones(int(options['-p'])) * float(options['-d'])
-    omega = np.genfromtxt(options['-o'])
+    p = int(options['-p'])
+    seed = None if options['-r'] == 'none' else int(options['-r'])
+    rng = np.random.default_rng(seed)
+    teta_init = np.zeros(p)
+    delta_teta = np.ones(p) * float(options['-d'])
+    if options['-o'] == 'none':
+        omega = float(options['-v']) * np.eye(p)
+    else:
+        omega = np.genfromtxt(options['-o'])
     i = Individual(int(options['-l']),
-                   int(options['-p']),
+                   p,
                    float(options['-e']),
                    float(options['-m']),
                    float(options['-b']),
-                   float(options['-s']))
-    p = Population(int(options['-n']),
-                   teta_init,
-                   float(options['-d']),
-                   omega,
-                   i)
-    for generation in xrange(int(options['-t'])):
-        print generation
-        p.next_generation(delta_teta)
-        p.print_moments()
+                   float(options['-s']),
+                   rng)
+    pop = Population(int(options['-n']),
+                     teta_init,
+                     float(options['-d']),
+                     omega,
+                     i)
+    for generation in range(int(options['-t'])):
+        print(generation)
+        pop.next_generation(delta_teta)
+        pop.print_moments()
+    pop.close()
+
 
 if __name__ == '__main__':
-    options = docopt(__doc__)
-    main(options)
+    main(docopt(__doc__))

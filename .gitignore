@@ -36,3 +36,4 @@ c-gsl/rdatas
 .Rproj.user
 .Rhistory
 *.Rproj
+.pixi/

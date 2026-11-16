@@ -15,3 +15,15 @@ Requirements
 1. GSL http://www.gnu.org/software/gsl/
 2. IPython notebook http://ipython.org/notebook.html
 3. ggplot2 http://ggplot2.org/
+
+Python version
+==============
+
+`py/pop.py` is a Python 3 port of the C model. Its environment is managed with
+[pixi](https://pixi.sh):
+
+    cd py
+    pixi install
+    pixi run sim -n 2500 -t 1000 -d 0.01 -r 42   # see `pixi run sim -h`
+
+Output goes to `py/dats/`.

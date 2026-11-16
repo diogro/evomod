@@ -18,9 +18,10 @@ def calc_fitness(inds, omega, theta, amb):
     fit_inds = np.zeros(len(inds))
 
     for i, ind in enumerate(inds):
-        z = np.dot(ind[1], ind[0]) + np.random.normal(0, amb, ind[1].shape[0]).reshape((10,1))
-        delta_s = z - theta.reshape((10,1))
-        fit_inds[i] = np.exp(-np.dot(delta_s.T, np.linalg.solve(omega, delta_s)))
+        p = ind[1].shape[0]
+        z = np.dot(ind[1], ind[0]) + np.random.normal(0, amb, p).reshape((p, 1))
+        delta_s = z - np.reshape(theta, (p, 1))
+        fit_inds[i] = np.exp(-0.5 * np.dot(delta_s.T, np.linalg.solve(omega, delta_s)).item())
 
     return fit_inds
 
