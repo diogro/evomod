@@ -1,18 +1,32 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_rng.h>
 #include "population/evolution.h"
 
+#define PATH_LEN 1024
+
+/* Build "<dir>/<file>" into out; abort if it does not fit. */
+static void join_path(char *out, const char *dir, const char *file)
+{
+    if (snprintf(out, PATH_LEN, "%s%s", dir, file) >= PATH_LEN) {
+        fprintf(stderr, "Path too long: %s%s\n", dir, file);
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main(){
 
-    int n_e, traits, m, burn_in, stabilizing, selective, generation, i, j;
+    int n_e, traits, m, burn_in, stabilizing, selective, generation, i;
     double mu, mu_b, sigma, v_e;
     double *delta_theta;
     int bool_sim_type;
     int bool_print_pop;
-    double packet_size;
     long seed;
 
     gsl_rng * r = gsl_rng_alloc (gsl_rng_mt19937);
@@ -41,50 +55,40 @@ int main(){
     Population *pop;
     pop = (Population *) malloc (sizeof(Population));
 
-    char out_folder_name[50];
+    char out_folder_name[256];
     printf ("\nOutput folder name\n");
-    scanf ("%s", out_folder_name);
-    char out_folder_name_path[50];
-    char* first= "./output/";
-    strcpy(out_folder_name_path, first);
-    strcat(out_folder_name_path, out_folder_name);
+    scanf ("%255s", out_folder_name);
+    char out_folder_name_path[PATH_LEN];
+    join_path(out_folder_name_path, "./output/", out_folder_name);
     mkdir(out_folder_name_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     printf ("%s", out_folder_name_path);
 
-    char aux[50];
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/phenotype.dat");
+    char aux[PATH_LEN];
+    join_path(aux, out_folder_name_path, "/phenotype.dat");
     phenotype      = fopen(aux, "w");
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/p.corr.dat");
+    join_path(aux, out_folder_name_path, "/p.corr.dat");
     p_corr         = fopen(aux, "w");
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/g.corr.dat");
+    join_path(aux, out_folder_name_path, "/g.corr.dat");
     g_corr         = fopen(aux, "w");
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/g.var.dat");
+    join_path(aux, out_folder_name_path, "/g.var.dat");
     g_var          = fopen(aux, "w");
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/p.var.dat");
+    join_path(aux, out_folder_name_path, "/p.var.dat");
     p_var          = fopen(aux, "w");
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/h.var.dat");
+    join_path(aux, out_folder_name_path, "/h.var.dat");
     h_var          = fopen(aux, "w");
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/pop.summary.dat");
+    join_path(aux, out_folder_name_path, "/pop.summary.dat");
     summary        = fopen(aux, "w");
-    strcpy(aux, out_folder_name_path);
-    strcat(aux, "/pop.parameters.txt");
+    join_path(aux, out_folder_name_path, "/pop.parameters.txt");
     parameters_out = fopen(aux, "w");
 
     omega_file     = fopen("./input/omega.csv", "r");
     theta_file     = fopen("./input/theta.csv", "r");
 
-    char input_parameters[50];
+    char input_parameters[256];
     printf ("\nInput parameters file name\n");
-    scanf ("%s", input_parameters);
-    char input_folder[50]= "./input/";
-    strcat(input_folder, input_parameters);
+    scanf ("%255s", input_parameters);
+    char input_folder[PATH_LEN];
+    join_path(input_folder, "./input/", input_parameters);
     printf ("%s", input_parameters);
     /*char input_parameters[50] = "./parameter.input.txt";*/
 
@@ -118,6 +122,7 @@ int main(){
     for(i = 0; i < traits; i++){
         fprintf(parameters_out, "%lf ", delta_theta[i]);
     }
+    fprintf(parameters_out, "\nseed = %ld\n", seed);
 
     gsl_vector * theta = gsl_vector_alloc (traits);
     gsl_matrix * omega = gsl_matrix_alloc (traits, traits);
@@ -134,8 +139,7 @@ int main(){
     scanf ("%d", &bool_print_pop);
 
     if (bool_print_pop) {
-        strcpy(aux, out_folder_name_path);
-        strcat(aux, "/pop.pop");
+        join_path(aux, out_folder_name_path, "/pop.pop");
         out_population = fopen(aux, "w");
     }
 
@@ -143,9 +147,9 @@ int main(){
         population_random_init (r, pop);
     }
     else{
-        char input_file_pop[50];
+        char input_file_pop[PATH_LEN];
         printf ("\nInput population file name\n");
-        scanf ("%s" ,input_file_pop);
+        scanf ("%1023s" ,input_file_pop);
         printf ("%s", input_file_pop);
         input_pop  = fopen(input_file_pop, "r");
         population_fscanf (pop, input_pop);

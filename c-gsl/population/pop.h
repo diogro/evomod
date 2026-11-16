@@ -1,3 +1,6 @@
+#ifndef EVOMOD_POP_H
+#define EVOMOD_POP_H
+
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 
@@ -29,3 +32,5 @@ typedef struct {
     gsl_vector *theta;    // optimal position
     gsl_matrix *omega;    // selective surface covariance structure
 } Population;
+
+#endif

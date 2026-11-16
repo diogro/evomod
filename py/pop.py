@@ -55,7 +55,7 @@ class Individual:
         mutation_number_y = np.random.binomial(2 * self.m, self.mu)
         if (mutation_number_y > 0):
             mutation_vector = np.concatenate((
-                np.random.normal(self.sigma, size=mutation_number_y),
+                np.random.normal(0, self.sigma, size=mutation_number_y),
                 np.zeros(2 * self.m - mutation_number_y)))
             np.random.shuffle(mutation_vector)
             ind['y'] = ind['y'] + mutation_vector
@@ -73,7 +73,7 @@ class Individual:
     def fitness(self, ind, omega, teta):
         """calculates ind fitness from population"""
         delta_s = ind['z'] - teta
-        return np.exp(-np.dot(delta_s, np.linalg.solve(omega, delta_s)))
+        return np.exp(-0.5 * np.dot(delta_s, np.linalg.solve(omega, delta_s)))
 
     def cross(self, ind_1, ind_2):
         """Generates a new individual by crossing ind_1 and ind_2"""
@@ -134,19 +134,7 @@ class Population:
 
     def mutate(self):
         """mutates every individual of population"""
-        #TODO Obviously parallel
-        out = mp.Queue()
-        chuck = self.n_e/cores
-        p = []
-        for i in xrange(cores):
-            p.append(pool.Process(target=f.partial(mut, self),args=(range(i*chuck,
-                (i+1)*chuck), out)))
-            p[-1].start()
-        for i in xrange(cores):
-            self.pop += out.get()
-        for i in xrange(cores):
-            p[i].join()
- #       self.pop = pool.map(f.partial(mut, self), range(0, self.n_e))
+        self.pop = [self.indmod.mutate(ind) for ind in self.pop]
 
     def pupdate_fitness(self):
         out = mp.Queue()
