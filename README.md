@@ -27,3 +27,20 @@ Python version
     pixi run sim -n 2500 -t 1000 -d 0.01 -r 42   # see `pixi run sim -h`
 
 Output goes to `py/dats/`.
+
+C simulation parameters
+=======================
+
+`c-gsl/main.c` reads `input/omega.csv` (fitness surface covariance),
+`input/theta.csv` (initial optimum) and a parameter file in `input/` with, in
+order: population size, number of traits, number of loci, mutation rate of
+allelic effects `mu` (per allele), mutation rate of the B matrix `mu_b` (per
+entry), `sigma`, `v_e`, generations of drift, of stabilizing and of
+directional selection, and the change in the optimum per generation (one value
+per trait).
+
+`sigma` (mutational effects on `y`) and `v_e` (environmental effects) are
+standard deviations. A B matrix mutation flips the entry, so B entries change
+at rate `mu_b`. Before November 2026 a mutation set the entry to a random
+value, so entries changed at rate `mu_b / 2`; the published simulations used
+that version.

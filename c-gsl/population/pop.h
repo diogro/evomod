@@ -14,8 +14,8 @@ typedef struct {
     int current_gen;      // current generation
     double mu;            // genotipic mutation rate
     double mu_b;          // ontogenetic mutatation rate
-    double sigma;         // mutation variance
-    double v_e;           // envairomental variance
+    double sigma;         // standard deviation of mutational effects on y
+    double v_e;           // environmental standard deviation
     double *fitness;
     gsl_vector **y;       // genome of population
     gsl_matrix **b;       // ontogenetic matrix of population
